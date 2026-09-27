@@ -111,6 +111,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _openDepartmentByName(String deptName) {
+    final activity = AppDataService.findActivityForDepartment(deptName);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => _DepartmentPage(
+          activity: activity,
+          onContact: () => _openWhatsApp(
+            'Bonjour GREAT MINDS GROUP, je souhaite ${activity.requestMessage}.',
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -161,7 +175,12 @@ class _HomePageState extends State<HomePage> {
                 ),
 
                 // 2. Dynamic Publications & News Section (Actualités des publications directement sous l'accueil)
-                Container(key: _newsKey, child: const PublicationsSection()),
+                Container(
+                  key: _newsKey,
+                  child: PublicationsSection(
+                    onOpenDepartment: _openDepartmentByName,
+                  ),
+                ),
 
                 // 3. Dynamic Offers Section (Offres & Formations)
                 Container(key: _offersKey, child: const OffersSection()),
@@ -1788,12 +1807,21 @@ class _DepartmentPublicationCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (publication.primaryImage != null)
-            SizedBox(
-              height: 180,
-              width: double.infinity,
-              child: AppImageViewer(
-                imageSource: publication.primaryImage,
-                fit: BoxFit.cover,
+            InkWell(
+              onTap: () {
+                AppDataService().incrementPublicationViews(publication.id);
+                showDialog<void>(
+                  context: context,
+                  builder: (context) => PublicationDetailDialog(publication: publication),
+                );
+              },
+              child: SizedBox(
+                height: 180,
+                width: double.infinity,
+                child: AppImageViewer(
+                  imageSource: publication.primaryImage,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           Padding(

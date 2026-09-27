@@ -1645,7 +1645,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: notifs.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final notif = notifs[index];
               final isLike = notif.type == 'like';
@@ -1677,7 +1677,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: iconBg.withOpacity(0.15),
+                          color: iconBg.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(icon, color: iconBg, size: 22),
@@ -1869,7 +1869,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: filtered.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final sub = filtered[index];
               return Container(
@@ -1882,7 +1882,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: const Color(0xFF10B981).withOpacity(0.15),
+                      backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.15),
                       child: Text(
                         (sub.fullName?.isNotEmpty == true ? sub.fullName![0] : sub.email[0]).toUpperCase(),
                         style: const TextStyle(

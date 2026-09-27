@@ -248,6 +248,33 @@ class AppDataService extends ChangeNotifier {
     }
   }
 
+  Future<void> addCommentToPublication(String publicationId, PublicationComment comment) async {
+    final index = _publications.indexWhere((p) => p.id == publicationId);
+    if (index != -1) {
+      final pub = _publications[index];
+      final updatedComments = [comment, ...pub.comments];
+      _publications[index] = pub.copyWith(comments: updatedComments);
+      await _savePublications();
+
+      // Notification pour l'administrateur
+      final notif = AdminNotification(
+        id: 'notif_cmt_${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Nouveau Commentaire 💬',
+        message: '${comment.authorName} a commenté : "${pub.title}"\n« ${comment.content} »',
+        type: 'comment',
+        createdAt: DateTime.now(),
+        data: {
+          'publicationId': pub.id,
+          'commentId': comment.id,
+          'author': comment.authorName,
+          'content': comment.content,
+        },
+      );
+      await addNotification(notif);
+      notifyListeners();
+    }
+  }
+
   Future<void> toggleLikePublication(String id) async {
     final index = _publications.indexWhere((p) => p.id == id);
     if (index != -1) {
@@ -933,4 +960,29 @@ class AppDataService extends ChangeNotifier {
       ],
     ),
   ];
+
+  static BusinessActivity findActivityForDepartment(String departmentName) {
+    final name = departmentName.toLowerCase().trim();
+    for (final act in activities) {
+      final actId = act.id.toLowerCase();
+      final actTitle = act.title.toLowerCase();
+      if (name == actId || name == actTitle || actTitle.contains(name) || name.contains(actTitle)) {
+        return act;
+      }
+    }
+    if (name.contains('parfum')) return activities.firstWhere((a) => a.id == 'parfum');
+    if (name.contains('texa') || name.contains('visa') || name.contains('billet') || name.contains('passeport') || name.contains('voyage')) {
+      return activities.firstWhere((a) => a.id == 'texa');
+    }
+    if (name.contains('auto') || name.contains('véhicule') || name.contains('vehicule') || name.contains('pièce') || name.contains('piece')) {
+      return activities.firstWhere((a) => a.id == 'autosolution');
+    }
+    if (name.contains('emploi') || name.contains('formation') || name.contains('recrutement') || name.contains('stage') || name.contains('carrière') || name.contains('carriere')) {
+      return activities.firstWhere((a) => a.id == 'emploi');
+    }
+    if (name.contains('fondation') || name.contains('jeune') || name.contains('social') || name.contains('bourse')) {
+      return activities.firstWhere((a) => a.id == 'fondation');
+    }
+    return activities.first;
+  }
 }

@@ -9,7 +9,9 @@ import '../../common/app_image_viewer.dart';
 import 'publication_detail_dialog.dart';
 
 class PublicationsSection extends StatefulWidget {
-  const PublicationsSection({super.key});
+  final void Function(String department)? onOpenDepartment;
+
+  const PublicationsSection({super.key, this.onOpenDepartment});
 
   @override
   State<PublicationsSection> createState() => _PublicationsSectionState();
@@ -23,7 +25,10 @@ class _PublicationsSectionState extends State<PublicationsSection> {
     AppDataService().incrementPublicationViews(pub.id);
     showDialog<void>(
       context: context,
-      builder: (context) => PublicationDetailDialog(publication: pub),
+      builder: (context) => PublicationDetailDialog(
+        publication: pub,
+        onOpenDepartment: widget.onOpenDepartment,
+      ),
     );
   }
 
@@ -251,42 +256,80 @@ class _PublicationsSectionState extends State<PublicationsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Image or Placeholder
-          Stack(
-            children: [
-              SizedBox(
-                height: 170,
-                width: double.infinity,
-                child: AppImageViewer(
-                  imageSource: pub.primaryImage,
-                  fit: BoxFit.cover,
-                  errorWidget: _buildCardImagePlaceholder(pub),
-                ),
-              ),
-              if (pub.allImages.length > 1)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.photo_library_rounded, size: 12, color: Colors.white),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${pub.allImages.length}',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+          // Header Image with direct click to Department
+          Tooltip(
+            message: 'Toucher la photo pour voir tous les produits du département ${pub.department}',
+            child: InkWell(
+              onTap: () {
+                if (widget.onOpenDepartment != null) {
+                  widget.onOpenDepartment!(pub.department);
+                } else {
+                  _openPublicationDetail(pub);
+                }
+              },
+              child: Stack(
+                children: [
+                  SizedBox(
+                    height: 170,
+                    width: double.infinity,
+                    child: AppImageViewer(
+                      imageSource: pub.primaryImage,
+                      fit: BoxFit.cover,
+                      errorWidget: _buildCardImagePlaceholder(pub),
                     ),
                   ),
-                ),
-            ],
+                  // Overlay badge "Voir tous les produits du département"
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryNavy.withValues(alpha: 0.88),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.touch_app_rounded, size: 12, color: AppTheme.accentCyan),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Voir département ${pub.department} ➔',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (pub.allImages.length > 1)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.photo_library_rounded, size: 12, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${pub.allImages.length}',
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
 
           Padding(
@@ -296,29 +339,40 @@ class _PublicationsSectionState extends State<PublicationsSection> {
               children: [
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentCyan.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.business_center_rounded, size: 12, color: Color(0xFF0C5645)),
-                          const SizedBox(width: 4),
-                          Text(
-                            pub.department,
-                            style: const TextStyle(
-                              color: Color(0xFF0C5645),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
+                    InkWell(
+                      onTap: () {
+                        if (widget.onOpenDepartment != null) {
+                          widget.onOpenDepartment!(pub.department);
+                        } else {
+                          _openPublicationDetail(pub);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentCyan.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppTheme.accentCyan.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.business_center_rounded, size: 12, color: Color(0xFF0C5645)),
+                            const SizedBox(width: 4),
+                            Text(
+                              pub.department,
+                              style: const TextStyle(
+                                color: Color(0xFF0C5645),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -400,12 +454,15 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                 const Divider(color: AppTheme.borderSubtle, height: 1),
                 const SizedBox(height: 12),
 
-                // Interactive Likes, Followers & Details Row
+                // Interactive Likes, Followers, Comments & Details Row
                 Row(
                   children: [
                     // Like button
                     _buildLikeButton(pub),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
+                    // Comment button
+                    _buildCommentButton(pub),
+                    const SizedBox(width: 6),
                     // Follow button
                     _buildFollowButton(pub),
                     const Spacer(),
@@ -416,7 +473,7 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                       label: Text(LanguageService().t('pubs_read_more')),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.accentBlue,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
@@ -467,6 +524,43 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: isLiked ? const Color(0xFFE53935) : AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommentButton(Publication pub) {
+    return Tooltip(
+      message: 'Commentaires & avis (${pub.comments.length})',
+      child: InkWell(
+        onTap: () => _openPublicationDetail(pub),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.transparent),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.chat_bubble_outline_rounded,
+                size: 15,
+                color: Color(0xFF1B7AE6),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                '${pub.comments.length}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B7AE6),
                 ),
               ),
             ],

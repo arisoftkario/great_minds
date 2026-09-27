@@ -1,3 +1,34 @@
+class PublicationComment {
+  final String id;
+  final String authorName;
+  final String content;
+  final DateTime createdAt;
+
+  const PublicationComment({
+    required this.id,
+    required this.authorName,
+    required this.content,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'authorName': authorName,
+        'content': content,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory PublicationComment.fromJson(Map<String, dynamic> json) =>
+      PublicationComment(
+        id: json['id'] as String,
+        authorName: (json['authorName'] as String?) ?? 'Visiteur',
+        content: (json['content'] as String?) ?? '',
+        createdAt: json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'] as String) ?? DateTime.now()
+            : DateTime.now(),
+      );
+}
+
 class Publication {
   final String id;
   final String title;
@@ -14,6 +45,7 @@ class Publication {
   final int viewsCount;
   final int likesCount;
   final int followersCount;
+  final List<PublicationComment> comments;
 
   const Publication({
     required this.id,
@@ -31,6 +63,7 @@ class Publication {
     this.viewsCount = 0,
     this.likesCount = 0,
     this.followersCount = 0,
+    this.comments = const [],
   });
 
   /// Retourne la liste complète des images (inclut imageUrl si non vide)
@@ -63,6 +96,7 @@ class Publication {
     int? viewsCount,
     int? likesCount,
     int? followersCount,
+    List<PublicationComment>? comments,
   }) {
     return Publication(
       id: id ?? this.id,
@@ -80,6 +114,7 @@ class Publication {
       viewsCount: viewsCount ?? this.viewsCount,
       likesCount: likesCount ?? this.likesCount,
       followersCount: followersCount ?? this.followersCount,
+      comments: comments ?? this.comments,
     );
   }
 
@@ -100,6 +135,7 @@ class Publication {
       'viewsCount': viewsCount,
       'likesCount': likesCount,
       'followersCount': followersCount,
+      'comments': comments.map((c) => c.toJson()).toList(),
     };
   }
 
@@ -114,6 +150,11 @@ class Publication {
     if (parsedImages.isEmpty && mainImage != null && mainImage.isNotEmpty) {
       parsedImages.add(mainImage);
     }
+
+    final parsedComments = (json['comments'] as List<dynamic>?)
+            ?.map((c) => PublicationComment.fromJson(c as Map<String, dynamic>))
+            .toList() ??
+        [];
 
     return Publication(
       id: json['id'] as String,
@@ -133,6 +174,7 @@ class Publication {
       viewsCount: json['viewsCount'] as int? ?? 0,
       likesCount: json['likesCount'] as int? ?? 0,
       followersCount: json['followersCount'] as int? ?? 0,
+      comments: parsedComments,
     );
   }
 }
