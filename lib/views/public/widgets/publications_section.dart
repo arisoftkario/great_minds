@@ -373,7 +373,7 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     const Icon(
@@ -394,15 +394,32 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const Divider(color: AppTheme.borderSubtle, height: 1),
+                const SizedBox(height: 12),
+
+                // Interactive Likes, Followers & Details Row
+                Row(
+                  children: [
+                    // Like button
+                    _buildLikeButton(pub),
+                    const SizedBox(width: 8),
+                    // Follow button
+                    _buildFollowButton(pub),
+                    const Spacer(),
+                    // Read more button
                     TextButton.icon(
                       onPressed: () => _openPublicationDetail(pub),
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 15),
                       label: Text(LanguageService().t('pubs_read_more')),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.accentBlue,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w800,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -412,6 +429,112 @@ class _PublicationsSectionState extends State<PublicationsSection> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLikeButton(Publication pub) {
+    final isLiked = AppDataService().isPublicationLiked(pub.id);
+    return Tooltip(
+      message: isLiked ? LanguageService().t('pubs_liked') : LanguageService().t('pubs_like'),
+      child: InkWell(
+        onTap: () {
+          AppDataService().toggleLikePublication(pub.id);
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isLiked ? const Color(0xFFFFEBEE) : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isLiked ? const Color(0xFFE53935).withValues(alpha: 0.4) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                size: 16,
+                color: isLiked ? const Color(0xFFE53935) : AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                '${pub.likesCount}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isLiked ? const Color(0xFFE53935) : AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFollowButton(Publication pub) {
+    final isFollowed = AppDataService().isPublicationFollowed(pub.id);
+    return Tooltip(
+      message: isFollowed ? LanguageService().t('pubs_following') : LanguageService().t('pubs_follow'),
+      child: InkWell(
+        onTap: () {
+          final wasFollowed = isFollowed;
+          AppDataService().toggleFollowPublication(pub.id);
+          if (!wasFollowed && mounted) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, color: Color(0xFF59D6B6), size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(LanguageService().t('pubs_follow_success'))),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+          }
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isFollowed ? const Color(0xFFE6F8F3) : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isFollowed ? const Color(0xFF00BFA5).withValues(alpha: 0.4) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isFollowed ? Icons.check_rounded : Icons.person_add_alt_1_rounded,
+                size: 15,
+                color: isFollowed ? const Color(0xFF00897B) : AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                isFollowed
+                    ? '${pub.followersCount} ${LanguageService().t('pubs_following')}'
+                    : '+ ${LanguageService().t('pubs_follow')} (${pub.followersCount})',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isFollowed ? const Color(0xFF00897B) : AppTheme.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

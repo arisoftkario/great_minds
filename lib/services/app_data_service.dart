@@ -40,6 +40,14 @@ class AppDataService extends ChangeNotifier {
   static const String _publicationsKey = 'gm_publications_data_v1';
   static const String _offersKey = 'gm_offers_data_v1';
   static const String _whatsAppKey = 'gm_whatsapp_number_v1';
+  static const String _likedPubsKey = 'gm_liked_publications_v1';
+  static const String _followedPubsKey = 'gm_followed_publications_v1';
+
+  final Set<String> _likedPublicationIds = {};
+  final Set<String> _followedPublicationIds = {};
+
+  bool isPublicationLiked(String id) => _likedPublicationIds.contains(id);
+  bool isPublicationFollowed(String id) => _followedPublicationIds.contains(id);
 
   Future<void> init() async {
     if (_isInitialized) return;
@@ -67,6 +75,16 @@ class AppDataService extends ChangeNotifier {
       } else {
         _offers = _getDefaultOffers();
         await _saveOffers();
+      }
+
+      // Liked & Followed Sets
+      final likedList = prefs.getStringList(_likedPubsKey);
+      if (likedList != null) {
+        _likedPublicationIds.addAll(likedList);
+      }
+      final followedList = prefs.getStringList(_followedPubsKey);
+      if (followedList != null) {
+        _followedPublicationIds.addAll(followedList);
       }
 
       _isInitialized = true;
@@ -181,6 +199,56 @@ class AppDataService extends ChangeNotifier {
     }
   }
 
+  Future<void> toggleLikePublication(String id) async {
+    final index = _publications.indexWhere((p) => p.id == id);
+    if (index != -1) {
+      final pub = _publications[index];
+      final isLiked = _likedPublicationIds.contains(id);
+      int newLikes = pub.likesCount;
+      if (isLiked) {
+        _likedPublicationIds.remove(id);
+        newLikes = (newLikes - 1).clamp(0, 999999);
+      } else {
+        _likedPublicationIds.add(id);
+        newLikes = newLikes + 1;
+      }
+      _publications[index] = pub.copyWith(likesCount: newLikes);
+      await _savePublications();
+      await _saveLikedAndFollowed();
+      notifyListeners();
+    }
+  }
+
+  Future<void> toggleFollowPublication(String id) async {
+    final index = _publications.indexWhere((p) => p.id == id);
+    if (index != -1) {
+      final pub = _publications[index];
+      final isFollowed = _followedPublicationIds.contains(id);
+      int newFollowers = pub.followersCount;
+      if (isFollowed) {
+        _followedPublicationIds.remove(id);
+        newFollowers = (newFollowers - 1).clamp(0, 999999);
+      } else {
+        _followedPublicationIds.add(id);
+        newFollowers = newFollowers + 1;
+      }
+      _publications[index] = pub.copyWith(followersCount: newFollowers);
+      await _savePublications();
+      await _saveLikedAndFollowed();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _saveLikedAndFollowed() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_likedPubsKey, _likedPublicationIds.toList());
+      await prefs.setStringList(_followedPubsKey, _followedPublicationIds.toList());
+    } catch (e) {
+      debugPrint('Error saving liked/followed: $e');
+    }
+  }
+
   // --- Offers CRUD ---
   Future<void> addOffer(Offer offer) async {
     _offers.insert(0, offer);
@@ -273,6 +341,8 @@ class AppDataService extends ChangeNotifier {
         isPublished: true,
         tags: ['Formation', 'Emploi', 'Jeunesse', 'Insertion'],
         viewsCount: 342,
+        likesCount: 64,
+        followersCount: 148,
       ),
       Publication(
         id: 'pub_2',
@@ -282,10 +352,13 @@ class AppDataService extends ChangeNotifier {
         summary: 'Découvrez notre guide exclusif et notre service d’audit personnalisé pour optimiser vos dossiers de visa.',
         content: '''Préparer un voyage d'affaires, d'études ou de vacances nécessite une rigueur documentaire exemplaire.\n\nLe département GM Texa met à votre disposition un service d'accompagnement complet :\n1. Analyse préalable de l'éligibilité et audit des pièces justificatives\n2. Prise de rendez-vous et suivi des dossiers consulaires\n3. Conseils personnalisés pour maximiser les chances d'acceptation.\n\nPrenez contact avec nos experts pour un entretien préalable.''',
         author: 'Équipe GM Texa',
+        imageUrl: 'assets/gm_texas.jpg',
         publishedDate: DateTime.now().subtract(const Duration(days: 6)),
         isPublished: true,
         tags: ['Voyage', 'Visa', 'Passeport', 'Accompagnement'],
         viewsCount: 215,
+        likesCount: 42,
+        followersCount: 96,
       ),
       Publication(
         id: 'pub_3',
@@ -300,6 +373,8 @@ class AppDataService extends ChangeNotifier {
         isPublished: true,
         tags: ['Parfum', 'Prestige', 'Luxe', 'Catalogue'],
         viewsCount: 489,
+        likesCount: 112,
+        followersCount: 230,
       ),
       Publication(
         id: 'pub_4',
@@ -313,6 +388,8 @@ class AppDataService extends ChangeNotifier {
         isPublished: true,
         tags: ['Partenariats', 'Entreprises', 'Économie'],
         viewsCount: 178,
+        likesCount: 35,
+        followersCount: 84,
       ),
     ];
   }
@@ -614,11 +691,12 @@ class AppDataService extends ChangeNotifier {
     ),
     const BusinessActivity(
       id: 'texa',
-      title: 'GM Texa — Visa & passeport',
-      description: 'Un accompagnement rigoureux pour préparer vos démarches de voyage.',
+      title: 'GM Texa — Visa & Billets d’avions',
+      description: 'Un accompagnement rigoureux pour préparer vos démarches de visa, passeport et réservation de billets d’avions.',
+      imageAsset: 'assets/gm_texas.jpg',
       fallbackIcon: Icons.flight_takeoff_rounded,
       actionLabel: 'Faire une demande',
-      requestMessage: 'obtenir un accompagnement pour visa et passeport',
+      requestMessage: 'obtenir un accompagnement pour visa, passeport et billets d’avions',
       offerings: [
         DepartmentOffering(
           icon: Icons.assignment_turned_in_rounded,
@@ -631,9 +709,9 @@ class AppDataService extends ChangeNotifier {
           description: 'Orientation pratique pour les démarches de voyage.',
         ),
         DepartmentOffering(
-          icon: Icons.event_available_rounded,
-          title: 'Suivi du projet',
-          description: 'Un accompagnement clair, étape par étape.',
+          icon: Icons.flight_rounded,
+          title: 'Billets d’avions',
+          description: 'Réservation de billets et optimisation de vos itinéraires.',
         ),
       ],
     ),

@@ -150,22 +150,28 @@ class _HomePageState extends State<HomePage> {
             controller: _scrollController,
             child: Column(
               children: [
-                // 1. Hero & Navigation
+                // 1. Hero & Navigation (Page d'accueil)
                 _HeroSection(
-                  onExplore: () => _scrollToKey(_servicesKey),
+                  onExplore: () => _scrollToKey(_newsKey),
                   onContact: _openWhatsApp,
                   onNavigate: _handleNavigate,
                   onAdminPortal: _openAdminPortal,
                   onOpenMenu: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
 
-                // 2. Stats
+                // 2. Dynamic Publications & News Section (Actualités des publications directement sous l'accueil)
+                Container(key: _newsKey, child: const PublicationsSection()),
+
+                // 3. Dynamic Offers Section (Offres & Formations)
+                Container(key: _offersKey, child: const OffersSection()),
+
+                // 4. Stats
                 const _StatsSection(),
 
-                // 3. Services
+                // 5. Services / Pôles
                 Container(key: _servicesKey, child: const _ServicesSection()),
 
-                // 4. Univers / Activities
+                // 6. Univers / Activities
                 Container(
                   key: _universKey,
                   child: _BusinessActivitiesSection(
@@ -184,12 +190,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-
-                // 5. Dynamic Offers Section
-                Container(key: _offersKey, child: const OffersSection()),
-
-                // 6. Dynamic Publications & News Section
-                Container(key: _newsKey, child: const PublicationsSection()),
 
                 // 7. About
                 Container(key: _aboutKey, child: const _AboutSection()),
@@ -406,10 +406,10 @@ class _Navigation extends StatelessWidget {
           const _Brand(),
           const Spacer(),
           if (!isMobile) ...[
+            TextButton(onPressed: () => onNavigate('news'), child: Text(LanguageService().t('nav_publications'), style: const TextStyle(color: AppTheme.accentCyan, fontWeight: FontWeight.w700))),
+            TextButton(onPressed: () => onNavigate('offers'), child: Text(LanguageService().t('nav_offers'), style: const TextStyle(color: Colors.white70))),
             TextButton(onPressed: () => onNavigate('services'), child: Text(LanguageService().t('nav_activities'), style: const TextStyle(color: Colors.white70))),
             TextButton(onPressed: () => onNavigate('univers'), child: const Text('Univers GM', style: TextStyle(color: Colors.white70))),
-            TextButton(onPressed: () => onNavigate('offers'), child: Text(LanguageService().t('nav_offers'), style: const TextStyle(color: AppTheme.accentCyan, fontWeight: FontWeight.w700))),
-            TextButton(onPressed: () => onNavigate('news'), child: Text(LanguageService().t('nav_publications'), style: const TextStyle(color: Colors.white70))),
             TextButton(onPressed: () => onNavigate('about'), child: Text(LanguageService().t('nav_contact'), style: const TextStyle(color: Colors.white70))),
             const SizedBox(width: 8),
           ],
@@ -2125,7 +2125,7 @@ class _DepartmentIdentity extends StatelessWidget {
         height: 190,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: const Color(0xFF0C3153),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: const Color(0xFF59D6B6), width: 2),
         ),
@@ -2707,6 +2707,26 @@ class _MobileDrawer extends StatelessWidget {
                     },
                   ),
                   _drawerItem(
+                    icon: Icons.newspaper_rounded,
+                    title: LanguageService().t('nav_publications'),
+                    subtitle: 'Articles, communiqués & annonces',
+                    badge: 'ACTUALITÉS',
+                    isAccent: true,
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onNavigate('news');
+                    },
+                  ),
+                  _drawerItem(
+                    icon: Icons.work_rounded,
+                    title: LanguageService().t('nav_offers'),
+                    subtitle: 'Emplois, bourses & stages',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onNavigate('offers');
+                    },
+                  ),
+                  _drawerItem(
                     icon: Icons.business_center_rounded,
                     title: LanguageService().t('nav_activities'),
                     subtitle: 'Conseil, Formation & Projets',
@@ -2722,26 +2742,6 @@ class _MobileDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('univers');
-                    },
-                  ),
-                  _drawerItem(
-                    icon: Icons.work_rounded,
-                    title: LanguageService().t('nav_offers'),
-                    subtitle: 'Emplois, bourses & stages',
-                    badge: 'NOUVEAU',
-                    isAccent: true,
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onNavigate('offers');
-                    },
-                  ),
-                  _drawerItem(
-                    icon: Icons.newspaper_rounded,
-                    title: LanguageService().t('nav_publications'),
-                    subtitle: 'Articles, communiqués & annonces',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onNavigate('news');
                     },
                   ),
                   _drawerItem(

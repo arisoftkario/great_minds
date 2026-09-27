@@ -72,6 +72,13 @@ class AppTranslations {
       'pubs_filter_all': 'Tous',
       'pubs_read_more': 'Lire l\'article',
       'pubs_empty': 'Aucune publication pour le moment.',
+      'pubs_like': 'J\'aime',
+      'pubs_liked': 'Aimé',
+      'pubs_likes': 'J\'aimes',
+      'pubs_follow': 'Suivre',
+      'pubs_following': 'Abonné',
+      'pubs_followers': 'Abonnés',
+      'pubs_follow_success': 'Vous suivez désormais cette publication !',
 
       // About Section
       'about_badge': 'À PROPOS',
@@ -172,6 +179,13 @@ class AppTranslations {
       'pubs_filter_all': 'All',
       'pubs_read_more': 'Read Article',
       'pubs_empty': 'No publications available yet.',
+      'pubs_like': 'Like',
+      'pubs_liked': 'Liked',
+      'pubs_likes': 'Likes',
+      'pubs_follow': 'Follow',
+      'pubs_following': 'Following',
+      'pubs_followers': 'Followers',
+      'pubs_follow_success': 'You are now following this publication!',
 
       // About Section
       'about_badge': 'ABOUT US',
@@ -272,6 +286,13 @@ class AppTranslations {
       'pubs_filter_all': 'Nyonso',
       'pubs_read_more': 'Tanga lisolo',
       'pubs_empty': 'Sango ezali naino te.',
+      'pubs_like': 'Nalingi',
+      'pubs_liked': 'Elingami',
+      'pubs_likes': 'Milingo',
+      'pubs_follow': 'Landa',
+      'pubs_following': 'Olandi',
+      'pubs_followers': 'Balandi',
+      'pubs_follow_success': 'Olandi sikoyo lisolo oyo !',
 
       // About Section
       'about_badge': 'MPO NA BISO',
@@ -372,6 +393,13 @@ class AppTranslations {
       'pubs_filter_all': 'Zote',
       'pubs_read_more': 'Soma Habari',
       'pubs_empty': 'Hakuna habari kwa sasa.',
+      'pubs_like': 'Napenda',
+      'pubs_liked': 'Imependwa',
+      'pubs_likes': 'Mapenzi',
+      'pubs_follow': 'Fuata',
+      'pubs_following': 'Umfuasi',
+      'pubs_followers': 'Wafuasi',
+      'pubs_follow_success': 'Sasa unafuata chapisho hili !',
 
       // About Section
       'about_badge': 'KUHUSU SISI',

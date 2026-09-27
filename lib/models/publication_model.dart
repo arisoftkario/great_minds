@@ -12,6 +12,8 @@ class Publication {
   final bool isPublished; // true = Publié, false = Brouillon
   final List<String> tags;
   final int viewsCount;
+  final int likesCount;
+  final int followersCount;
 
   const Publication({
     required this.id,
@@ -27,6 +29,8 @@ class Publication {
     this.isPublished = true,
     this.tags = const [],
     this.viewsCount = 0,
+    this.likesCount = 0,
+    this.followersCount = 0,
   });
 
   /// Retourne la liste complète des images (inclut imageUrl si non vide)
@@ -57,6 +61,8 @@ class Publication {
     bool? isPublished,
     List<String>? tags,
     int? viewsCount,
+    int? likesCount,
+    int? followersCount,
   }) {
     return Publication(
       id: id ?? this.id,
@@ -72,6 +78,8 @@ class Publication {
       isPublished: isPublished ?? this.isPublished,
       tags: tags ?? this.tags,
       viewsCount: viewsCount ?? this.viewsCount,
+      likesCount: likesCount ?? this.likesCount,
+      followersCount: followersCount ?? this.followersCount,
     );
   }
 
@@ -90,6 +98,8 @@ class Publication {
       'isPublished': isPublished,
       'tags': tags,
       'viewsCount': viewsCount,
+      'likesCount': likesCount,
+      'followersCount': followersCount,
     };
   }
 
@@ -121,6 +131,8 @@ class Publication {
       isPublished: json['isPublished'] as bool? ?? true,
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       viewsCount: json['viewsCount'] as int? ?? 0,
+      likesCount: json['likesCount'] as int? ?? 0,
+      followersCount: json['followersCount'] as int? ?? 0,
     );
   }
 }

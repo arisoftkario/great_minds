@@ -162,6 +162,8 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
         isPublished: _isPublished,
         tags: tags,
         viewsCount: widget.publication?.viewsCount ?? 0,
+        likesCount: widget.publication?.likesCount ?? 0,
+        followersCount: widget.publication?.followersCount ?? 0,
       );
 
       Navigator.of(context).pop(newPub);

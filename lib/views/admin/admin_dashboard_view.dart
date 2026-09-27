@@ -990,16 +990,43 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             style: const TextStyle(color: AppTheme.textSecondary, height: 1.5, fontSize: 14),
           ),
           const SizedBox(height: 14),
-          Row(
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Icon(Icons.person_outline_rounded, size: 16, color: AppTheme.textSecondary),
-              const SizedBox(width: 6),
-              Text(p.author, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
-              const SizedBox(width: 16),
-              const Icon(Icons.remove_red_eye_outlined, size: 16, color: AppTheme.textSecondary),
-              const SizedBox(width: 6),
-              Text('${p.viewsCount} vues', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-              const Spacer(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.person_outline_rounded, size: 16, color: AppTheme.textSecondary),
+                  const SizedBox(width: 6),
+                  Text(p.author, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.remove_red_eye_outlined, size: 16, color: AppTheme.textSecondary),
+                  const SizedBox(width: 6),
+                  Text('${p.viewsCount} vues', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.favorite_rounded, size: 15, color: Color(0xFFE53935)),
+                  const SizedBox(width: 6),
+                  Text('${p.likesCount} j\'aimes', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.groups_rounded, size: 16, color: Color(0xFF00897B)),
+                  const SizedBox(width: 6),
+                  Text('${p.followersCount} abonnés', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
+                ],
+              ),
               if (p.tags.isNotEmpty)
                 Wrap(
                   spacing: 6,
