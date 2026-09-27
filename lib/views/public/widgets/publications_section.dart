@@ -7,6 +7,7 @@ import '../../../services/app_data_service.dart';
 import '../../../services/language_service.dart';
 import '../../common/app_image_viewer.dart';
 import 'publication_detail_dialog.dart';
+import 'order_checkout_dialog.dart';
 
 class PublicationsSection extends StatefulWidget {
   final void Function(String department)? onOpenDepartment;
@@ -29,6 +30,13 @@ class _PublicationsSectionState extends State<PublicationsSection> {
         publication: pub,
         onOpenDepartment: widget.onOpenDepartment,
       ),
+    );
+  }
+
+  void _openOrderCheckout(Publication pub) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => OrderCheckoutDialog(publication: pub),
     );
   }
 
@@ -454,31 +462,72 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                 const Divider(color: AppTheme.borderSubtle, height: 1),
                 const SizedBox(height: 12),
 
-                // Interactive Likes, Followers, Comments & Details Row
+                // Interactive Likes, Followers & Comments Row
                 Row(
                   children: [
-                    // Like button
                     _buildLikeButton(pub),
                     const SizedBox(width: 6),
-                    // Comment button
                     _buildCommentButton(pub),
                     const SizedBox(width: 6),
-                    // Follow button
                     _buildFollowButton(pub),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Price Tag & "Se procurer" / "Lire plus" Actions Row
+                Row(
+                  children: [
+                    // Price Tag Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.sell_outlined, size: 12, color: Color(0xFF047857)),
+                          const SizedBox(width: 4),
+                          Text(
+                            pub.displayPrice,
+                            style: const TextStyle(
+                              color: Color(0xFF047857),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const Spacer(),
-                    // Read more button
-                    TextButton.icon(
+                    // "Se procurer" Button
+                    FilledButton.icon(
+                      onPressed: () => _openOrderCheckout(pub),
+                      icon: const Icon(Icons.shopping_bag_rounded, size: 13),
+                      label: const Text('Se procurer', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // "Lire plus" Button
+                    TextButton(
                       onPressed: () => _openPublicationDetail(pub),
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 15),
-                      label: Text(LanguageService().t('pubs_read_more')),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.accentBlue,
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                         textStyle: const TextStyle(
                           fontWeight: FontWeight.w800,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
+                      child: Text(LanguageService().t('pubs_read_more')),
                     ),
                   ],
                 ),

@@ -22,6 +22,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
   late TextEditingController _contentController;
   late TextEditingController _authorController;
   late TextEditingController _tagsController;
+  late TextEditingController _priceController;
   late TextEditingController _urlInputController;
 
   String _selectedCategory = 'Actualité';
@@ -57,6 +58,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
     _contentController = TextEditingController(text: p?.content ?? '');
     _authorController = TextEditingController(text: p?.author ?? 'Direction GM GROUP');
     _tagsController = TextEditingController(text: p?.tags.join(', ') ?? 'Formation, Emploi');
+    _priceController = TextEditingController(text: p?.price ?? '');
     _urlInputController = TextEditingController();
     _selectedCategory = p?.category ?? 'Actualité';
     _selectedDepartment = p?.department ?? 'Toutes les activités';
@@ -71,6 +73,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
     _contentController.dispose();
     _authorController.dispose();
     _tagsController.dispose();
+    _priceController.dispose();
     _urlInputController.dispose();
     super.dispose();
   }
@@ -161,6 +164,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
         publishedDate: widget.publication?.publishedDate ?? DateTime.now(),
         isPublished: _isPublished,
         tags: tags,
+        price: _priceController.text.trim().isNotEmpty ? _priceController.text.trim() : null,
         viewsCount: widget.publication?.viewsCount ?? 0,
         likesCount: widget.publication?.likesCount ?? 0,
         followersCount: widget.publication?.followersCount ?? 0,
@@ -240,23 +244,28 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Activité / Département & Catégorie
+                      // Prix / Tarif & Catégorie
                       Row(
                         children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Activité / Département *', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                                const Row(
+                                  children: [
+                                    Text('Prix / Tarif du produit', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                                    SizedBox(width: 6),
+                                    Text('(Optionnel)', style: TextStyle(fontSize: 12, color: Colors.black45)),
+                                  ],
+                                ),
                                 const SizedBox(height: 8),
-                                DropdownButtonFormField<String>(
-                                  initialValue: _departments.contains(_selectedDepartment) ? _selectedDepartment : _departments.first,
-                                  items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
-                                  onChanged: (val) {
-                                    if (val != null) setState(() => _selectedDepartment = val);
-                                  },
-                                  decoration: const InputDecoration(
-                                    prefixIcon: Icon(Icons.business_center_rounded, color: AppTheme.accentBlue, size: 20),
+                                TextFormField(
+                                  controller: _priceController,
+                                  decoration: InputDecoration(
+                                    hintText: 'Ex: 25 000 FCFA, 45 \$, 15 000 GNF...',
+                                    prefixIcon: const Icon(Icons.sell_rounded, color: AppTheme.accentGold, size: 20),
+                                    helperText: 'Active le bouton "Se procurer" pour l\'achat en ligne',
+                                    helperStyle: TextStyle(fontSize: 11, color: AppTheme.accentGold.withValues(alpha: 0.9)),
                                   ),
                                 ),
                               ],
@@ -279,6 +288,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
                                     prefixIcon: Icon(Icons.category_rounded, color: AppTheme.accentCyan, size: 20),
                                   ),
                                 ),
+                                const SizedBox(height: 20), // align with helperText
                               ],
                             ),
                           ),
@@ -286,20 +296,23 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Auteur & Statut de publication
+                      // Activité / Département & Statut
                       Row(
                         children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Auteur / Responsable', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                                const Text('Activité / Département *', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
                                 const SizedBox(height: 8),
-                                TextFormField(
-                                  controller: _authorController,
+                                DropdownButtonFormField<String>(
+                                  initialValue: _departments.contains(_selectedDepartment) ? _selectedDepartment : _departments.first,
+                                  items: _departments.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setState(() => _selectedDepartment = val);
+                                  },
                                   decoration: const InputDecoration(
-                                    hintText: 'Ex: Direction GM GROUP, Équipe GM Texa...',
-                                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                                    prefixIcon: Icon(Icons.business_center_rounded, color: AppTheme.accentBlue, size: 20),
                                   ),
                                 ),
                               ],
@@ -340,6 +353,18 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Auteur / Responsable
+                      const Text('Auteur / Responsable', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _authorController,
+                        decoration: const InputDecoration(
+                          hintText: 'Ex: Direction GM GROUP, Équipe GM Texa...',
+                          prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                        ),
                       ),
                       const SizedBox(height: 18),
 

@@ -37,6 +37,7 @@ class Publication {
   final String summary;
   final String content;
   final String author;
+  final String? price; // Ex: '25 000 FCFA', '50 USD', '15 000 FCFA', 'Sur devis'
   final String? imageUrl;
   final List<String> images;
   final DateTime publishedDate;
@@ -55,6 +56,7 @@ class Publication {
     required this.summary,
     required this.content,
     required this.author,
+    this.price,
     this.imageUrl,
     this.images = const [],
     required this.publishedDate,
@@ -65,6 +67,12 @@ class Publication {
     this.followersCount = 0,
     this.comments = const [],
   });
+
+  /// Retourne le prix formaté ou un texte par défaut
+  String get displayPrice => (price != null && price!.trim().isNotEmpty) ? price!.trim() : 'Sur devis';
+
+  /// Indique si la publication a un prix défini
+  bool get hasPrice => price != null && price!.trim().isNotEmpty;
 
   /// Retourne la liste complète des images (inclut imageUrl si non vide)
   List<String> get allImages {
@@ -88,6 +96,7 @@ class Publication {
     String? summary,
     String? content,
     String? author,
+    String? price,
     String? imageUrl,
     List<String>? images,
     DateTime? publishedDate,
@@ -106,6 +115,7 @@ class Publication {
       summary: summary ?? this.summary,
       content: content ?? this.content,
       author: author ?? this.author,
+      price: price ?? this.price,
       imageUrl: imageUrl ?? this.imageUrl,
       images: images ?? this.images,
       publishedDate: publishedDate ?? this.publishedDate,
@@ -127,6 +137,7 @@ class Publication {
       'summary': summary,
       'content': content,
       'author': author,
+      'price': price,
       'imageUrl': primaryImage,
       'images': images,
       'publishedDate': publishedDate.toIso8601String(),
@@ -164,6 +175,7 @@ class Publication {
       summary: json['summary'] as String? ?? '',
       content: json['content'] as String? ?? '',
       author: json['author'] as String? ?? 'Direction GM GROUP',
+      price: json['price'] as String?,
       imageUrl: mainImage ?? (parsedImages.isNotEmpty ? parsedImages.first : null),
       images: parsedImages,
       publishedDate: json['publishedDate'] != null

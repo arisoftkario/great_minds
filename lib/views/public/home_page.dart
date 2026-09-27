@@ -17,6 +17,7 @@ import 'widgets/offers_section.dart';
 import 'widgets/publication_detail_dialog.dart';
 import 'widgets/publications_section.dart';
 import 'widgets/subscription_section.dart';
+import 'widgets/order_checkout_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -1881,17 +1882,44 @@ class _DepartmentPublicationCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      publication.author,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary,
-                        fontWeight: FontWeight.w600,
+                    // Price Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        publication.displayPrice,
+                        style: const TextStyle(
+                          color: Color(0xFF047857),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
+                    const Spacer(),
+                    // Se procurer button
                     FilledButton.icon(
+                      onPressed: () {
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) => OrderCheckoutDialog(publication: publication),
+                        );
+                      },
+                      icon: const Icon(Icons.shopping_bag_rounded, size: 13),
+                      label: const Text('Se procurer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Lire plus button
+                    TextButton(
                       onPressed: () {
                         AppDataService().incrementPublicationViews(publication.id);
                         showDialog<void>(
@@ -1899,14 +1927,11 @@ class _DepartmentPublicationCard extends StatelessWidget {
                           builder: (context) => PublicationDetailDialog(publication: publication),
                         );
                       },
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 14),
-                      label: Text(LanguageService().t('pubs_read_more')),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF061A2E),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF061A2E),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       ),
+                      child: Text(LanguageService().t('pubs_read_more')),
                     ),
                   ],
                 ),

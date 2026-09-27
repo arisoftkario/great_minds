@@ -8,6 +8,7 @@ import '../models/offer_model.dart';
 import '../models/activity_model.dart';
 import '../models/subscriber_model.dart';
 import '../models/admin_notification_model.dart';
+import '../models/order_model.dart';
 
 class AppDataService extends ChangeNotifier {
   static final AppDataService _instance = AppDataService._internal();
@@ -18,6 +19,7 @@ class AppDataService extends ChangeNotifier {
   List<Offer> _offers = [];
   List<Subscriber> _subscribers = [];
   List<AdminNotification> _notifications = [];
+  List<OrderItem> _orders = [];
   String _whatsAppNumber = AppConstants.whatsAppNumber;
   bool _isInitialized = false;
   DateTime? _lastSyncTime;
@@ -29,6 +31,7 @@ class AppDataService extends ChangeNotifier {
   List<Offer> get offers => List.unmodifiable(_offers);
   List<Subscriber> get subscribers => List.unmodifiable(_subscribers);
   List<AdminNotification> get notifications => List.unmodifiable(_notifications);
+  List<OrderItem> get orders => List.unmodifiable(_orders);
   int get unreadNotificationsCount => _notifications.where((n) => !n.isRead).length;
   String get whatsAppNumber => _whatsAppNumber;
   bool get isInitialized => _isInitialized;
@@ -48,6 +51,7 @@ class AppDataService extends ChangeNotifier {
   static const String _offersKey = 'gm_offers_data_v1';
   static const String _subscribersKey = 'gm_subscribers_data_v1';
   static const String _notificationsKey = 'gm_admin_notifications_v1';
+  static const String _ordersKey = 'gm_orders_data_v1';
   static const String _whatsAppKey = 'gm_whatsapp_number_v1';
   static const String _likedPubsKey = 'gm_liked_publications_v1';
   static const String _followedPubsKey = 'gm_followed_publications_v1';
@@ -95,6 +99,15 @@ class AppDataService extends ChangeNotifier {
         _subscribers = [];
       }
 
+      // Orders
+      final orderJson = prefs.getString(_ordersKey);
+      if (orderJson != null && orderJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(orderJson);
+        _orders = decoded.map((item) => OrderItem.fromJson(item)).toList();
+      } else {
+        _orders = [];
+      }
+
       // Notifications
       final notifJson = prefs.getString(_notificationsKey);
       if (notifJson != null && notifJson.isNotEmpty) {
@@ -124,6 +137,7 @@ class AppDataService extends ChangeNotifier {
       _offers = _getDefaultOffers();
       _subscribers = [];
       _notifications = [];
+      _orders = [];
       _isInitialized = true;
       _lastSyncTime = DateTime.now();
       startAutoSync(); // Lance l'auto-synchronisation automatique toutes les 10 secondes
@@ -185,6 +199,14 @@ class AppDataService extends ChangeNotifier {
         newSubscribers = decoded.map((item) => Subscriber.fromJson(item)).toList();
       }
 
+      // Orders
+      List<OrderItem> newOrders = _orders;
+      final orderJson = prefs.getString(_ordersKey);
+      if (orderJson != null && orderJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(orderJson);
+        newOrders = decoded.map((item) => OrderItem.fromJson(item)).toList();
+      }
+
       // Notifications
       List<AdminNotification> newNotifications = _notifications;
       final notifJson = prefs.getString(_notificationsKey);
@@ -198,12 +220,14 @@ class AppDataService extends ChangeNotifier {
       _offers = newOffers;
       _subscribers = newSubscribers;
       _notifications = newNotifications;
+      _orders = newOrders;
 
       // Sauvegarde explicite pour persistance maximale
       await _savePublications();
       await _saveOffers();
       await _saveSubscribers();
       await _saveNotifications();
+      await _saveOrders();
 
       _lastSyncTime = DateTime.now();
       _isSyncing = false;
@@ -416,6 +440,49 @@ class AppDataService extends ChangeNotifier {
     }
   }
 
+  // --- Orders & E-commerce Payments ---
+  Future<void> addOrder(OrderItem order) async {
+    _orders.insert(0, order);
+    await _saveOrders();
+
+    // Notification instantanée pour l'administrateur
+    final notif = AdminNotification(
+      id: 'notif_ord_${DateTime.now().millisecondsSinceEpoch}',
+      title: 'Nouvelle Commande 🛍️ (${order.totalAmount})',
+      message: '${order.customerName} a commandé ${order.quantity}x "${order.productTitle}" (${order.totalAmount}).\nTél: ${order.customerPhone} | Adresse: ${order.deliveryAddress}',
+      type: 'order',
+      createdAt: DateTime.now(),
+      data: order.toJson(),
+    );
+    await addNotification(notif);
+    notifyListeners();
+  }
+
+  Future<void> updateOrderStatus(String id, String status) async {
+    final index = _orders.indexWhere((o) => o.id == id);
+    if (index != -1) {
+      _orders[index] = _orders[index].copyWith(status: status);
+      await _saveOrders();
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteOrder(String id) async {
+    _orders.removeWhere((o) => o.id == id);
+    await _saveOrders();
+    notifyListeners();
+  }
+
+  Future<void> _saveOrders() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_orders.map((o) => o.toJson()).toList());
+      await prefs.setString(_ordersKey, encoded);
+    } catch (e) {
+      debugPrint('Error saving orders: $e');
+    }
+  }
+
   // --- Offers CRUD ---
   Future<void> addOffer(Offer offer) async {
     _offers.insert(0, offer);
@@ -503,6 +570,7 @@ class AppDataService extends ChangeNotifier {
         summary: 'GREAT MINDS GROUP ouvre les candidatures pour son nouveau cycle intensif de formation et de placement pour 150 jeunes.',
         content: '''GREAT MINDS GROUP franchit une nouvelle étape dans son engagement pour l'employabilité des jeunes talents.\n\nCe programme intensif de 3 mois combine :\n• Des modules pratiques en compétences clés et leadership professionnel\n• Du coaching individuel avec des mentors issus du monde de l'entreprise\n• Un accompagnement sur-mesure pour l'accès à des stages et opportunités d'emploi.\n\nLes inscriptions sont ouvertes dès aujourd'hui. Contactez nos conseillers pour réserver votre place.''',
         author: 'Direction des Programmes GM',
+        price: '150 \$ (Bourses disponibles)',
         imageUrl: 'assets/Wh.jpeg',
         publishedDate: DateTime.now().subtract(const Duration(days: 2)),
         isPublished: true,
@@ -519,6 +587,7 @@ class AppDataService extends ChangeNotifier {
         summary: 'Découvrez notre guide exclusif et notre service d’audit personnalisé pour optimiser vos dossiers de visa.',
         content: '''Préparer un voyage d'affaires, d'études ou de vacances nécessite une rigueur documentaire exemplaire.\n\nLe département GM Texa met à votre disposition un service d'accompagnement complet :\n1. Analyse préalable de l'éligibilité et audit des pièces justificatives\n2. Prise de rendez-vous et suivi des dossiers consulaires\n3. Conseils personnalisés pour maximiser les chances d'acceptation.\n\nPrenez contact avec nos experts pour un entretien préalable.''',
         author: 'Équipe GM Texa',
+        price: '75 \$ (Audit & Montage)',
         imageUrl: 'assets/gm_texas.jpg',
         publishedDate: DateTime.now().subtract(const Duration(days: 6)),
         isPublished: true,
@@ -535,6 +604,7 @@ class AppDataService extends ChangeNotifier {
         summary: 'Une gamme de fragrances haut de gamme sélectionnées pour l’élégance quotidienne et les grandes occasions.',
         content: '''GM Parfum a le plaisir de dévoiler sa nouvelle sélection exclusive de fragrances raffinées.\n\nDisponibles dès maintenant en coffrets cadeaux et formats personnalisés avec livraison rapide.\nCommandez directement via notre service WhatsApp dédié pour bénéficier des tarifs préférentiels de lancement.''',
         author: 'Département GM Parfum',
+        price: '45 \$ (Flacon Signature)',
         imageUrl: 'assets/Imag.jpeg',
         publishedDate: DateTime.now().subtract(const Duration(days: 10)),
         isPublished: true,
@@ -551,6 +621,7 @@ class AppDataService extends ChangeNotifier {
         summary: 'Signature de conventions pour faciliter l’intégration directe de nos diplômés au sein des entreprises partenaires.',
         content: '''Dans le cadre de son plan de développement, GREAT MINDS GROUP a officialisé 5 nouveaux partenariats avec des leaders industriels et commerciaux.\n\nCes accords prévoient l'accueil régulier de nos stagiaires et l'ouverture de postes dédiés pour les profils qualifiés formés par GM GROUP.''',
         author: 'Direction Générale',
+        price: 'Sur devis',
         publishedDate: DateTime.now().subtract(const Duration(days: 15)),
         isPublished: true,
         tags: ['Partenariats', 'Entreprises', 'Économie'],

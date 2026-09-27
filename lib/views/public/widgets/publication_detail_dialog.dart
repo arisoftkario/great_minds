@@ -6,6 +6,7 @@ import '../../../models/publication_model.dart';
 import '../../../services/app_data_service.dart';
 import '../../../services/language_service.dart';
 import '../../common/app_image_viewer.dart';
+import 'order_checkout_dialog.dart';
 
 class PublicationDetailDialog extends StatefulWidget {
   final Publication publication;
@@ -341,6 +342,72 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                                 const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.accentBlue),
                               ],
                             ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Prominent Price & "Se procurer" Banner
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF047857),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.sell_rounded, color: Colors.white, size: 22),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Prix de l’article :',
+                                      style: TextStyle(fontSize: 12, color: Color(0xFF065F46), fontWeight: FontWeight.w600),
+                                    ),
+                                    Text(
+                                      publication.displayPrice,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF064E3B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  showDialog<void>(
+                                    context: context,
+                                    builder: (_) => OrderCheckoutDialog(publication: publication),
+                                  );
+                                },
+                                icon: const Icon(Icons.shopping_bag_rounded, size: 18),
+                                label: const Text(
+                                  'Se procurer / Acheter',
+                                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFF047857),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -786,9 +853,22 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                   ),
                   child: Row(
                     children: [
-                      Text(
-                        langService.t('pubs_question_cta'),
-                        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
+                      // Se procurer button in footer
+                      FilledButton.icon(
+                        onPressed: () {
+                          showDialog<void>(
+                            context: context,
+                            builder: (_) => OrderCheckoutDialog(publication: publication),
+                          );
+                        },
+                        icon: const Icon(Icons.shopping_bag_rounded, size: 17),
+                        label: const Text('Se procurer', style: TextStyle(fontWeight: FontWeight.w800)),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
                       ),
                       const Spacer(),
                       FilledButton.icon(

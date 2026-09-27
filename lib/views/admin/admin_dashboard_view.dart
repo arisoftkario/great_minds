@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/offer_model.dart';
+import '../../models/order_model.dart';
 import '../../models/publication_model.dart';
 import '../../services/app_data_service.dart';
 import '../../services/auth_service.dart';
@@ -17,14 +18,16 @@ class AdminDashboardView extends StatefulWidget {
 }
 
 class _AdminDashboardViewState extends State<AdminDashboardView> {
-  int _selectedTabIndex = 0; // 0: Overview, 1: Publications, 2: Offers, 3: Notifications, 4: Subscribers, 5: Settings
+  int _selectedTabIndex = 0; // 0: Overview, 1: Publications, 2: Offers, 3: Orders, 4: Notifications, 5: Subscribers, 6: Settings
   final TextEditingController _searchPubController = TextEditingController();
   final TextEditingController _searchOfferController = TextEditingController();
   final TextEditingController _searchSubscriberController = TextEditingController();
+  final TextEditingController _searchOrderController = TextEditingController();
   String _filterPubCategory = 'Tous';
   String _filterPubDept = 'Tous';
   String _filterOfferDept = 'Tous';
   String _filterOfferType = 'Tous';
+  String _filterOrderStatus = 'Tous';
   bool _isSyncing = false;
 
   Future<void> _syncAllData() async {
@@ -42,6 +45,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     _searchPubController.dispose();
     _searchOfferController.dispose();
     _searchSubscriberController.dispose();
+    _searchOrderController.dispose();
     super.dispose();
   }
 
@@ -271,10 +275,12 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       case 2:
         return 'Gestion des Offres & Opportunités';
       case 3:
-        return 'Centre de Notifications & Interactions';
+        return 'Commandes & Ventes en ligne';
       case 4:
-        return 'Gestion des Abonnés & Communauté';
+        return 'Centre de Notifications & Interactions';
       case 5:
+        return 'Gestion des Abonnés & Communauté';
+      case 6:
         return 'Paramètres & Configuration';
       default:
         return 'Administration';
@@ -285,6 +291,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   Widget _buildSidebar({bool isDrawer = false}) {
     final unreadCount = AppDataService().unreadNotificationsCount;
     final totalSubscribers = AppDataService().subscribers.length;
+    final pendingOrdersCount = AppDataService().orders.where((o) => o.status == 'En attente').length;
 
     return Container(
       width: 260,
@@ -337,18 +344,25 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 _sidebarItem(2, Icons.work_outline_rounded, 'Offres & Emploi'),
                 _sidebarItem(
                   3,
+                  Icons.shopping_bag_rounded,
+                  'Commandes & Ventes',
+                  badgeCount: pendingOrdersCount,
+                  badgeColor: const Color(0xFFF59E0B),
+                ),
+                _sidebarItem(
+                  4,
                   Icons.notifications_active_rounded,
                   'Notifications & Likes',
                   badgeCount: unreadCount,
                 ),
                 _sidebarItem(
-                  4,
+                  5,
                   Icons.people_alt_rounded,
                   'Abonnés & Newsletter',
                   badgeCount: totalSubscribers,
                   badgeColor: const Color(0xFF10B981),
                 ),
-                _sidebarItem(5, Icons.settings_rounded, 'Paramètres'),
+                _sidebarItem(6, Icons.settings_rounded, 'Paramètres'),
               ],
             ),
           ),
@@ -486,10 +500,12 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       case 2:
         return _buildOffersTab(service);
       case 3:
-        return _buildNotificationsTab(service);
+        return _buildOrdersTab(service);
       case 4:
-        return _buildSubscribersTab(service);
+        return _buildNotificationsTab(service);
       case 5:
+        return _buildSubscribersTab(service);
+      case 6:
         return _buildSettingsTab(service);
       default:
         return _buildOverviewTab(service);
@@ -505,6 +521,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final totalOffers = service.offers.length;
     final activeOffers = service.activeOffers.length;
     final urgentOffers = service.offers.where((o) => o.isUrgent && o.isActive).length;
+    final totalOrders = service.orders.length;
+    final pendingOrders = service.orders.where((o) => o.status == 'En attente').length;
     final totalViews = service.publications.fold<int>(0, (sum, p) => sum + p.viewsCount);
     final totalLikes = service.publications.fold<int>(0, (sum, p) => sum + p.likesCount);
     final totalSubscribers = service.subscribers.length;
@@ -530,6 +548,16 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                     Icons.article_rounded,
                     AppTheme.accentBlue,
                     'Actives sur le site',
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _statCard(
+                    'Commandes Clients',
+                    '$totalOrders ($pendingOrders en attente)',
+                    Icons.shopping_bag_rounded,
+                    const Color(0xFFF59E0B),
+                    'Bouton "Se procurer"',
                   ),
                 ),
                 SizedBox(
@@ -1970,5 +1998,670 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           ),
       ],
     );
+  }
+
+  // ==========================================
+  // TAB 3: GESTION DES COMMANDES & VENTES EN LIGNE
+  // ==========================================
+  Widget _buildOrdersTab(AppDataService service) {
+    final query = _searchOrderController.text.trim().toLowerCase();
+    final allOrders = service.orders;
+
+    final filtered = allOrders.where((order) {
+      final matchesQuery = query.isEmpty ||
+          order.customerName.toLowerCase().contains(query) ||
+          order.customerPhone.toLowerCase().contains(query) ||
+          order.productTitle.toLowerCase().contains(query) ||
+          order.id.toLowerCase().contains(query) ||
+          order.reference.toLowerCase().contains(query) ||
+          order.deliveryAddress.toLowerCase().contains(query) ||
+          (order.city?.toLowerCase().contains(query) ?? false);
+
+      final matchesStatus = _filterOrderStatus == 'Tous' || order.status == _filterOrderStatus;
+
+      return matchesQuery && matchesStatus;
+    }).toList();
+
+    final pendingCount = allOrders.where((o) => o.status == 'En attente').length;
+    final confirmedCount = allOrders.where((o) => o.status == 'Confirmée').length;
+    final deliveryCount = allOrders.where((o) => o.status == 'En cours de livraison').length;
+    final deliveredCount = allOrders.where((o) => o.status == 'Livrée').length;
+    final cancelledCount = allOrders.where((o) => o.status == 'Annulée').length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top Banner / Statistics summary
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F2A4A), Color(0xFF1E3A8A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.shopping_bag_rounded, color: Color(0xFFF59E0B), size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Commandes & Ventes en Ligne (Bouton "Se procurer")',
+                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Gérez les achats passés par les visiteurs sur chaque publication et produit.',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              // Status summary pills
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  _orderStatPill('Total', '${allOrders.length}', const Color(0xFF94A3B8), 'Tous'),
+                  _orderStatPill('En attente', '$pendingCount', const Color(0xFFF59E0B), 'En attente'),
+                  _orderStatPill('Confirmées', '$confirmedCount', const Color(0xFF3B82F6), 'Confirmée'),
+                  _orderStatPill('En livraison', '$deliveryCount', const Color(0xFF8B5CF6), 'En cours de livraison'),
+                  _orderStatPill('Livrées', '$deliveredCount', const Color(0xFF10B981), 'Livrée'),
+                  _orderStatPill('Annulées', '$cancelledCount', const Color(0xFFEF4444), 'Annulée'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Search & Filter row
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.borderSubtle),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchOrderController,
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher par client, téléphone, produit, ville ou réf (#CMD)...',
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: _searchOrderController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () {
+                              _searchOrderController.clear();
+                              setState(() {});
+                            },
+                          )
+                        : null,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppTheme.borderSubtle),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppTheme.borderSubtle),
+                    ),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Filter status dropdown
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.borderSubtle),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _filterOrderStatus,
+                    icon: const Icon(Icons.filter_list_rounded, size: 18, color: AppTheme.accentBlue),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                    items: const [
+                      DropdownMenuItem(value: 'Tous', child: Text('Tous les statuts')),
+                      DropdownMenuItem(value: 'En attente', child: Text('En attente')),
+                      DropdownMenuItem(value: 'Confirmée', child: Text('Confirmée')),
+                      DropdownMenuItem(value: 'En cours de livraison', child: Text('En livraison')),
+                      DropdownMenuItem(value: 'Livrée', child: Text('Livrée')),
+                      DropdownMenuItem(value: 'Annulée', child: Text('Annulée')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) setState(() => _filterOrderStatus = val);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Orders list
+        if (filtered.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.shopping_bag_outlined, size: 48, color: AppTheme.textSecondary),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    query.isEmpty ? 'Aucune commande enregistrée pour le moment' : 'Aucun résultat trouvé pour "$query"',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Les commandes passées par les visiteurs via le bouton "Se procurer" apparaîtront ici avec toutes les coordonnées.',
+                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filtered.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 14),
+            itemBuilder: (context, index) {
+              final order = filtered[index];
+              final statusColor = _getOrderStatusColor(order.status);
+              final statusIcon = _getOrderStatusIcon(order.status);
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: order.status == 'En attente'
+                        ? const Color(0xFFF59E0B).withValues(alpha: 0.4)
+                        : AppTheme.borderSubtle,
+                    width: order.status == 'En attente' ? 1.5 : 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header of order card
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                        border: const Border(bottom: BorderSide(color: AppTheme.borderSubtle)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryNavy,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              order.reference,
+                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Icon(Icons.access_time_rounded, size: 14, color: Colors.grey.shade600),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('dd/MM/yyyy à HH:mm').format(order.createdAt),
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                          ),
+                          const Spacer(),
+                          // Status Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(statusIcon, size: 14, color: statusColor),
+                                const SizedBox(width: 6),
+                                Text(
+                                  order.status,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: statusColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Body
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Product & Pricing info
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFBBF7D0)),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.sell_rounded, color: Color(0xFF059669), size: 20),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        order.productTitle,
+                                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF064E3B)),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Prix unitaire: ${order.unitPrice} | Quantité: ${order.quantity}',
+                                        style: const TextStyle(fontSize: 12, color: Color(0xFF047857), fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF059669),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    'Total: ${order.totalPrice}',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Customer details grid
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isCompact = constraints.maxWidth < 650;
+                              return isCompact
+                                  ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildCustomerSection(order),
+                                        const SizedBox(height: 14),
+                                        _buildDeliverySection(order),
+                                      ],
+                                    )
+                                  : Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(child: _buildCustomerSection(order)),
+                                        const SizedBox(width: 20),
+                                        Expanded(child: _buildDeliverySection(order)),
+                                      ],
+                                    );
+                            },
+                          ),
+
+                          if (order.notes?.isNotEmpty == true) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFFDE68A)),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.note_alt_outlined, color: Color(0xFFD97706), size: 16),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Note client : "${order.notes}"',
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFF92400E), fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    // Actions Footer
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFAFAFA),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
+                        ),
+                        border: Border(top: BorderSide(color: AppTheme.borderSubtle)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'Statut de la commande :',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textPrimary),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppTheme.borderSubtle),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: order.status,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                                items: const [
+                                  DropdownMenuItem(value: 'En attente', child: Text('⏳ En attente')),
+                                  DropdownMenuItem(value: 'Confirmée', child: Text('✓ Confirmée')),
+                                  DropdownMenuItem(value: 'En cours de livraison', child: Text('🚚 En cours de livraison')),
+                                  DropdownMenuItem(value: 'Livrée', child: Text('🎉 Livrée')),
+                                  DropdownMenuItem(value: 'Annulée', child: Text('✕ Annulée')),
+                                ],
+                                onChanged: (newStatus) {
+                                  if (newStatus != null && newStatus != order.status) {
+                                    service.updateOrderStatus(order.id, newStatus);
+                                    _showToast('Statut mis à jour : $newStatus');
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: AppTheme.errorRed, size: 20),
+                            tooltip: 'Supprimer la commande',
+                            onPressed: () {
+                              showDialog<void>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Supprimer la commande'),
+                                  content: Text('Voulez-vous supprimer définitivement la commande ${order.reference} ?'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+                                    FilledButton(
+                                      onPressed: () {
+                                        Navigator.pop(ctx);
+                                        service.deleteOrder(order.id);
+                                        _showToast('Commande supprimée.');
+                                      },
+                                      style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+                                      child: const Text('Supprimer'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCustomerSection(OrderItem order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'CLIENT & CONTACT',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.textSecondary, letterSpacing: 1),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.person_rounded, size: 16, color: AppTheme.accentBlue),
+            const SizedBox(width: 8),
+            Text(
+              order.customerName,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            const Icon(Icons.phone_rounded, size: 16, color: Color(0xFF10B981)),
+            const SizedBox(width: 8),
+            SelectableText(
+              order.customerPhone,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF0F766E)),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.copy_rounded, size: 15, color: Colors.grey),
+              tooltip: 'Copier le numéro',
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: order.customerPhone));
+                _showToast('Numéro copié : ${order.customerPhone}');
+              },
+            ),
+          ],
+        ),
+        if (order.customerEmail?.isNotEmpty == true) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(Icons.email_outlined, size: 16, color: Colors.grey),
+              const SizedBox(width: 8),
+              Text(
+                order.customerEmail!,
+                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDeliverySection(OrderItem order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'LIVRAISON & PAIEMENT',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.textSecondary, letterSpacing: 1),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.payment_rounded, size: 16, color: AppTheme.accentGold),
+            const SizedBox(width: 8),
+            Text(
+              order.paymentMethod,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textPrimary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.location_on_rounded, size: 16, color: AppTheme.errorRed),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${order.city ?? 'Ville non précisée'} : ${order.deliveryAddress.isNotEmpty ? order.deliveryAddress : 'Adresse non précisée'}',
+                style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _orderStatPill(String label, String count, Color color, String filterValue) {
+    final isSelected = _filterOrderStatus == filterValue;
+    return InkWell(
+      onTap: () => setState(() => _filterOrderStatus = filterValue),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.25),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? const Color(0xFF0F2A4A) : Colors.white,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: isSelected ? color.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                count,
+                style: TextStyle(
+                  color: isSelected ? const Color(0xFF0F2A4A) : Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getOrderStatusColor(String status) {
+    switch (status) {
+      case 'En attente':
+        return const Color(0xFFF59E0B);
+      case 'Confirmée':
+        return const Color(0xFF3B82F6);
+      case 'En cours de livraison':
+        return const Color(0xFF8B5CF6);
+      case 'Livrée':
+        return const Color(0xFF10B981);
+      case 'Annulée':
+        return const Color(0xFFEF4444);
+      default:
+        return const Color(0xFF64748B);
+    }
+  }
+
+  IconData _getOrderStatusIcon(String status) {
+    switch (status) {
+      case 'En attente':
+        return Icons.hourglass_top_rounded;
+      case 'Confirmée':
+        return Icons.check_circle_outline_rounded;
+      case 'En cours de livraison':
+        return Icons.local_shipping_rounded;
+      case 'Livrée':
+        return Icons.verified_rounded;
+      case 'Annulée':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.info_outline_rounded;
+    }
   }
 }
