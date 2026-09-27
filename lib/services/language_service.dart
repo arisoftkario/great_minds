@@ -27,6 +27,17 @@ class LanguageService extends ChangeNotifier {
     LanguageModel(code: 'en', name: 'English', flag: '🇬🇧'),
     LanguageModel(code: 'ln', name: 'Lingála', flag: '🇨🇩'),
     LanguageModel(code: 'sw', name: 'Kiswahili', flag: '🇹🇿'),
+    LanguageModel(code: 'es', name: 'Español', flag: '🇪🇸'),
+    LanguageModel(code: 'ar', name: 'العربية', flag: '🇸🇦'),
+    LanguageModel(code: 'pt', name: 'Português', flag: '🇵🇹'),
+    LanguageModel(code: 'zh', name: '中文', flag: '🇨🇳'),
+    LanguageModel(code: 'ko', name: '한국어', flag: '🇰🇷'),
+    LanguageModel(code: 'de', name: 'Deutsch', flag: '🇩🇪'),
+    LanguageModel(code: 'it', name: 'Italiano', flag: '🇮🇹'),
+    LanguageModel(code: 'ru', name: 'Русский', flag: '🇷🇺'),
+    LanguageModel(code: 'ja', name: '日本語', flag: '🇯🇵'),
+    LanguageModel(code: 'tr', name: 'Türkçe', flag: '🇹🇷'),
+    LanguageModel(code: 'hi', name: 'हिन्दी', flag: '🇮🇳'),
   ];
 
   String _currentLanguage = 'fr';
@@ -68,33 +79,38 @@ class LanguageService extends ChangeNotifier {
       if (locales.isNotEmpty) {
         for (final loc in locales) {
           final lang = loc.languageCode.toLowerCase();
-          final country = loc.countryCode?.toUpperCase() ?? '';
-
-          if (lang.startsWith('en') || const ['US', 'GB', 'CA', 'AU', 'NG', 'KE', 'UG', 'ZA', 'GH', 'RW'].contains(country)) {
-            return 'en';
-          }
-          if (lang.startsWith('sw') || const ['TZ', 'KE', 'UG', 'BI'].contains(country)) {
-            return 'sw';
-          }
-          if (lang.startsWith('ln')) {
-            return 'ln';
-          }
-          if (lang.startsWith('fr') || const ['FR', 'CD', 'CG', 'BE', 'CH', 'CI', 'SN', 'CM', 'GA', 'ML', 'BF', 'NE', 'TG', 'BJ', 'GN', 'MG'].contains(country)) {
-            return 'fr';
-          }
+          final detected = _matchLanguageCode(lang);
+          if (detected != null) return detected;
         }
       }
 
       final single = ui.PlatformDispatcher.instance.locale;
       final singleLang = single.languageCode.toLowerCase();
-      if (singleLang.startsWith('en')) return 'en';
-      if (singleLang.startsWith('sw')) return 'sw';
-      if (singleLang.startsWith('ln')) return 'ln';
-      if (singleLang.startsWith('fr')) return 'fr';
+      final detectedSingle = _matchLanguageCode(singleLang);
+      if (detectedSingle != null) return detectedSingle;
     } catch (e) {
       debugPrint('Language auto-detection error: $e');
     }
     return 'fr';
+  }
+
+  String? _matchLanguageCode(String code) {
+    if (code.startsWith('fr')) return 'fr';
+    if (code.startsWith('en')) return 'en';
+    if (code.startsWith('ln')) return 'ln';
+    if (code.startsWith('sw')) return 'sw';
+    if (code.startsWith('es')) return 'es';
+    if (code.startsWith('ar')) return 'ar';
+    if (code.startsWith('pt')) return 'pt';
+    if (code.startsWith('zh')) return 'zh';
+    if (code.startsWith('ko')) return 'ko';
+    if (code.startsWith('de')) return 'de';
+    if (code.startsWith('it')) return 'it';
+    if (code.startsWith('ru')) return 'ru';
+    if (code.startsWith('ja')) return 'ja';
+    if (code.startsWith('tr')) return 'tr';
+    if (code.startsWith('hi')) return 'hi';
+    return null;
   }
 
   bool _isSupported(String code) {

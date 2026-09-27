@@ -421,6 +421,7 @@ class _Navigation extends StatelessWidget {
               final currentModel = LanguageService().currentLanguageModel;
               return PopupMenuButton<String>(
                 tooltip: 'Changer de langue / Change Language',
+                constraints: const BoxConstraints(maxHeight: 380),
                 onSelected: (String langCode) {
                   LanguageService().setLanguage(langCode);
                 },
@@ -2474,6 +2475,7 @@ class _Footer extends StatelessWidget {
                       final currentModel = LanguageService().currentLanguageModel;
                       return PopupMenuButton<String>(
                         tooltip: 'Langue / Language',
+                        constraints: const BoxConstraints(maxHeight: 380),
                         onSelected: (String langCode) {
                           LanguageService().setLanguage(langCode);
                         },
