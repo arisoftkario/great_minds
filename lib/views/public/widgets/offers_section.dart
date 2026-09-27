@@ -226,6 +226,7 @@ class _OffersSectionState extends State<OffersSection> {
   }
 
   Widget _buildOfferCard(Offer offer, bool isCompact) {
+    final langService = LanguageService();
     final deadlineStr = DateFormat('dd/MM/yyyy').format(offer.deadline);
 
     return Container(
