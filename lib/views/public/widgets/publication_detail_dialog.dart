@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/publication_model.dart';
 import '../../../services/app_data_service.dart';
+import '../../../services/language_service.dart';
 import '../../common/app_image_viewer.dart';
 
 class PublicationDetailDialog extends StatefulWidget {
@@ -35,8 +36,9 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
   @override
   Widget build(BuildContext context) {
     final dataService = AppDataService();
+    final langService = LanguageService();
     return ListenableBuilder(
-      listenable: dataService,
+      listenable: Listenable.merge([dataService, langService]),
       builder: (context, _) {
         // Obtenir la publication à jour depuis le service
         final publication = dataService.publications.firstWhere(
@@ -224,7 +226,7 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                               children: [
                                 const Icon(Icons.remove_red_eye_outlined, size: 15, color: AppTheme.textSecondary),
                                 const SizedBox(width: 6),
-                                Text('${publication.viewsCount} lectures', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                                Text('${publication.viewsCount} ${langService.t('pubs_reads')}', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
                               ],
                             ),
                             Row(
@@ -232,7 +234,7 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                               children: [
                                 const Icon(Icons.favorite_rounded, size: 15, color: Color(0xFFE53935)),
                                 const SizedBox(width: 6),
-                                Text('${publication.likesCount} J\'aimes', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                                Text('${publication.likesCount} ${langService.t('pubs_likes')}', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
                               ],
                             ),
                             Row(
@@ -240,7 +242,7 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                               children: [
                                 const Icon(Icons.groups_rounded, size: 16, color: Color(0xFF00897B)),
                                 const SizedBox(width: 6),
-                                Text('${publication.followersCount} Abonnés', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                                Text('${publication.followersCount} ${langService.t('pubs_followers')}', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
                               ],
                             ),
                           ],
@@ -319,8 +321,8 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                                 ),
                                 label: Text(
                                   isLiked
-                                      ? 'Aimé (${publication.likesCount})'
-                                      : 'J\'aime (${publication.likesCount})',
+                                      ? '${langService.t('pubs_liked')} (${publication.likesCount})'
+                                      : '${langService.t('pubs_like')} (${publication.likesCount})',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: isLiked ? Colors.white : const Color(0xFFE53935),
@@ -347,9 +349,9 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                                     ScaffoldMessenger.of(context)
                                       ..hideCurrentSnackBar()
                                       ..showSnackBar(
-                                        const SnackBar(
-                                          content: Text('✓ Vous suivez désormais cette publication !'),
-                                          duration: Duration(seconds: 2),
+                                        SnackBar(
+                                          content: Text(langService.t('pubs_follow_success')),
+                                          duration: const Duration(seconds: 2),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -362,8 +364,8 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                                 ),
                                 label: Text(
                                   isFollowed
-                                      ? 'Abonné (${publication.followersCount})'
-                                      : 'Suivre (${publication.followersCount})',
+                                      ? '${langService.t('pubs_following')} (${publication.followersCount})'
+                                      : '${langService.t('pubs_follow')} (${publication.followersCount})',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
                                     color: isFollowed ? Colors.white : const Color(0xFF00897B),
@@ -400,15 +402,15 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Text(
-                        'Une question sur cette publication ?',
-                        style: TextStyle(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
+                      Text(
+                        langService.t('pubs_question_cta'),
+                        style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, fontWeight: FontWeight.w600),
                       ),
                       const Spacer(),
                       FilledButton.icon(
                         onPressed: () => _shareWhatsApp(context),
                         icon: const Icon(Icons.chat_rounded, size: 18),
-                        label: const Text('Échanger sur WhatsApp'),
+                        label: Text(langService.t('pubs_chat_btn')),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.accentCyan,
                           foregroundColor: AppTheme.primaryNavy,

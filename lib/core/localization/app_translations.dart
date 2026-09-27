@@ -1,16 +1,27 @@
 class AppTranslations {
   static const Map<String, Map<String, String>> _values = {
     'fr': {
-      // Nav
+      // Nav & Drawer
       'nav_home': 'Accueil',
       'nav_activities': 'Nos Pôles',
       'nav_offers': 'Offres & Formations',
       'nav_publications': 'Actualités',
+      'nav_univers': 'Univers GM',
+      'nav_about': 'À Propos',
+      'nav_method': 'Méthodologie',
       'nav_contact': 'Contact',
       'nav_admin': 'Espace Admin',
       'nav_install': 'Installer l\'App',
       'nav_sync_tooltip': 'Synchronisation auto (10s)',
       'nav_sync_success': '✓ Données synchronisées avec succès !',
+      'drawer_sync_subtitle': 'Mise à jour en direct (10s auto)',
+      'drawer_admin_subtitle': 'Connexion administrateur',
+      'drawer_news_subtitle': 'Articles, communiqués & annonces',
+      'drawer_offers_subtitle': 'Emplois, bourses & stages',
+      'drawer_services_subtitle': 'Conseil, Formation & Projets',
+      'drawer_univers_subtitle': 'Nos départements et filiales',
+      'drawer_about_subtitle': 'Notre mission & équipe',
+      'drawer_method_subtitle': 'Notre démarche étape par étape',
 
       // Hero
       'hero_badge': 'GROUPE MULTISECTORIEL & IMPACT SOCIAL',
@@ -19,6 +30,11 @@ class AppTranslations {
       'hero_subtitle': 'Des solutions concrètes pour la formation, l’insertion professionnelle, l’accompagnement stratégique et la création d’opportunités durables en RD Congo et à l’international.',
       'hero_btn_offers': 'Explorer les Opportunités',
       'hero_btn_contact': 'Nous Contacter sur WhatsApp',
+      'hero_pill_emploi': 'Formation & Emploi',
+      'hero_pill_parfum': 'GM Parfum',
+      'hero_pill_texa': 'GM Texa (Visa & Vols)',
+      'hero_pill_auto': 'GM Autosolution',
+      'hero_pill_fondation': 'GM Fondation',
 
       // Vision Card
       'vision_title': 'Vision & résultats',
@@ -53,6 +69,19 @@ class AppTranslations {
       'univers_subtitle': 'GREAT MINDS GROUP réunit des services spécialisés pour répondre à des besoins concrets.',
       'univers_visit_dept': 'Visiter le département',
 
+      // Departements / Univers Details
+      'dept_back_btn': 'Retour à GREAT MINDS GROUP',
+      'dept_header_badge': 'DÉPARTEMENT GREAT MINDS GROUP',
+      'dept_title_prefix': 'L’univers',
+      'dept_pubs_badge': 'ACTUALITÉS & ANNONCES DU DÉPARTEMENT',
+      'dept_pubs_title': 'Publications du pôle',
+      'dept_offers_badge': 'PRODUITS & OPPORTUNITÉS DISPONIBLES',
+      'dept_offers_title': 'Offres & Services du département',
+      'dept_services_badge': 'SERVICES & EXPERTISES',
+      'dept_services_title': 'Notre proposition de valeur',
+      'dept_order_btn': 'Commander / Souscrire',
+      'dept_details_btn': 'Fiche détaillée',
+
       // Offers Section
       'offers_section_badge': 'OFFRES & OPPORTUNITÉS',
       'offers_section_title': 'Trouvez l’opportunité qui vous correspond.',
@@ -64,6 +93,16 @@ class AppTranslations {
       'offers_apply_whatsapp': 'Postuler sur WhatsApp',
       'offers_view_details': 'Fiche détaillée',
       'offers_empty': 'Aucune offre trouvée dans cette catégorie.',
+      'offers_urgent_badge': 'Urgent',
+      'offers_deadline_prefix': 'Date limite : ',
+      'offers_urgent_banner': 'Offre urgente - Traitement prioritaire des candidatures',
+      'offers_loc_label': 'Localisation',
+      'offers_price_label': 'Rémunération / Tarif',
+      'offers_deadline_label': 'Date limite',
+      'offers_desc_title': 'Description du poste & Missions',
+      'offers_reqs_title': 'Profil recherché & Exigences',
+      'offers_close_btn': 'Fermer',
+      'offers_apply_dialog_btn': 'Postuler / Répondre via WhatsApp',
 
       // Publications Section
       'pubs_section_badge': 'ACTUALITÉS & PUBLICATIONS',
@@ -78,7 +117,10 @@ class AppTranslations {
       'pubs_follow': 'Suivre',
       'pubs_following': 'Abonné',
       'pubs_followers': 'Abonnés',
-      'pubs_follow_success': 'Vous suivez désormais cette publication !',
+      'pubs_follow_success': '✓ Vous suivez désormais cette publication !',
+      'pubs_reads': 'lectures',
+      'pubs_question_cta': 'Une question sur cette publication ?',
+      'pubs_chat_btn': 'Échanger sur WhatsApp',
 
       // About Section
       'about_badge': 'À PROPOS',
@@ -108,16 +150,27 @@ class AppTranslations {
       'language': 'Langue',
     },
     'en': {
-      // Nav
+      // Nav & Drawer
       'nav_home': 'Home',
       'nav_activities': 'Our Sectors',
       'nav_offers': 'Jobs & Training',
       'nav_publications': 'News & Insights',
+      'nav_univers': 'GM Sectors',
+      'nav_about': 'About Us',
+      'nav_method': 'Methodology',
       'nav_contact': 'Contact',
       'nav_admin': 'Admin Portal',
       'nav_install': 'Install App',
       'nav_sync_tooltip': 'Auto-sync active (10s)',
       'nav_sync_success': '✓ Data synchronized successfully!',
+      'drawer_sync_subtitle': 'Live background updates (10s)',
+      'drawer_admin_subtitle': 'Administrator login',
+      'drawer_news_subtitle': 'Articles, notices & announcements',
+      'drawer_offers_subtitle': 'Jobs, scholarships & internships',
+      'drawer_services_subtitle': 'Advisory, Training & Projects',
+      'drawer_univers_subtitle': 'Our branches and subsidiaries',
+      'drawer_about_subtitle': 'Our mission & leadership',
+      'drawer_method_subtitle': 'Our step-by-step roadmap',
 
       // Hero
       'hero_badge': 'MULTI-SECTOR GROUP & SOCIAL IMPACT',
@@ -126,6 +179,11 @@ class AppTranslations {
       'hero_subtitle': 'Concrete solutions for professional training, job placement, strategic support, and creating sustainable opportunities in DR Congo and worldwide.',
       'hero_btn_offers': 'Explore Opportunities',
       'hero_btn_contact': 'Contact Us on WhatsApp',
+      'hero_pill_emploi': 'Training & Employment',
+      'hero_pill_parfum': 'GM Perfume',
+      'hero_pill_texa': 'GM Texa (Visa & Flights)',
+      'hero_pill_auto': 'GM Autosolution',
+      'hero_pill_fondation': 'GM Foundation',
 
       // Vision Card
       'vision_title': 'Vision & Results',
@@ -160,6 +218,19 @@ class AppTranslations {
       'univers_subtitle': 'GREAT MINDS GROUP combines specialized departments to solve practical challenges.',
       'univers_visit_dept': 'Explore department',
 
+      // Departements / Univers Details
+      'dept_back_btn': 'Back to GREAT MINDS GROUP',
+      'dept_header_badge': 'GREAT MINDS GROUP DEPARTMENT',
+      'dept_title_prefix': 'The universe of',
+      'dept_pubs_badge': 'DEPARTMENT NEWS & ANNOUNCEMENTS',
+      'dept_pubs_title': 'Department publications',
+      'dept_offers_badge': 'AVAILABLE PRODUCTS & OPPORTUNITIES',
+      'dept_offers_title': 'Department offers & services',
+      'dept_services_badge': 'SERVICES & EXPERTISE',
+      'dept_services_title': 'Our value proposition',
+      'dept_order_btn': 'Order / Subscribe',
+      'dept_details_btn': 'View Details',
+
       // Offers Section
       'offers_section_badge': 'OPPORTUNITIES & CAREERS',
       'offers_section_title': 'Find the opportunity made for you.',
@@ -171,6 +242,16 @@ class AppTranslations {
       'offers_apply_whatsapp': 'Apply via WhatsApp',
       'offers_view_details': 'View Details',
       'offers_empty': 'No opportunities found in this category.',
+      'offers_urgent_badge': 'Urgent',
+      'offers_deadline_prefix': 'Deadline: ',
+      'offers_urgent_banner': 'Urgent offer - Priority application review',
+      'offers_loc_label': 'Location',
+      'offers_price_label': 'Salary / Fee',
+      'offers_deadline_label': 'Deadline',
+      'offers_desc_title': 'Role Description & Key Missions',
+      'offers_reqs_title': 'Candidate Profile & Requirements',
+      'offers_close_btn': 'Close',
+      'offers_apply_dialog_btn': 'Apply / Inquire on WhatsApp',
 
       // Publications Section
       'pubs_section_badge': 'NEWS & INSIGHTS',
@@ -185,7 +266,10 @@ class AppTranslations {
       'pubs_follow': 'Follow',
       'pubs_following': 'Following',
       'pubs_followers': 'Followers',
-      'pubs_follow_success': 'You are now following this publication!',
+      'pubs_follow_success': '✓ You are now following this publication!',
+      'pubs_reads': 'views',
+      'pubs_question_cta': 'Have a question about this article?',
+      'pubs_chat_btn': 'Chat on WhatsApp',
 
       // About Section
       'about_badge': 'ABOUT US',
@@ -216,15 +300,27 @@ class AppTranslations {
     },
     'ln': {
       // Lingala
+      // Nav & Drawer
       'nav_home': 'Bandela',
       'nav_activities': 'Misala na biso',
       'nav_offers': 'Misala & Mateya',
       'nav_publications': 'Sango',
+      'nav_univers': 'Biteni ya GM',
+      'nav_about': 'Mpo na Biso',
+      'nav_method': 'Lolenge ya Mosala',
       'nav_contact': 'Solola na biso',
       'nav_admin': 'Esika ya Admin',
       'nav_install': 'Kota na App',
       'nav_sync_tooltip': 'Kozwa sango ya sika (10s)',
       'nav_sync_success': '✓ Sango nyonso ezongeli sika!',
+      'drawer_sync_subtitle': 'Bozwi sango ya mbala moko (10s)',
+      'drawer_admin_subtitle': 'Kokota esika ya mokambi',
+      'drawer_news_subtitle': 'Masolo, biyano mpe sango',
+      'drawer_offers_subtitle': 'Misala, bourses mpe komeka mosala',
+      'drawer_services_subtitle': 'Toli, Mateya mpe Misala',
+      'drawer_univers_subtitle': 'Biteni na biso nyonso',
+      'drawer_about_subtitle': 'Mikano mpe ekipi na biso',
+      'drawer_method_subtitle': 'Nzela ya mosala mokolo na mokolo',
 
       // Hero
       'hero_badge': 'LISANGA YA MISALA & BOTONGI BOKOLO',
@@ -233,6 +329,11 @@ class AppTranslations {
       'hero_subtitle': 'Bisaleli ya solosolo mpo na mateya ya misala, bokotisi bilenge na misala mpe kopesa mabaku ya ntina na RD Congo mpe na mokili mobimba.',
       'hero_btn_offers': 'Tala Mabaku ya Misala',
       'hero_btn_contact': 'Solola na biso na WhatsApp',
+      'hero_pill_emploi': 'Mateya & Misala',
+      'hero_pill_parfum': 'GM Malasi',
+      'hero_pill_texa': 'GM Texa (Visa & Mpepo)',
+      'hero_pill_auto': 'GM Mituka',
+      'hero_pill_fondation': 'GM Fondation',
 
       // Vision Card
       'vision_title': 'Makanisi & Bipai',
@@ -267,6 +368,19 @@ class AppTranslations {
       'univers_subtitle': 'GREAT MINDS GROUP ezali na biteni ebele ya misala mpo na kopesa eyano na biloko nyonso.',
       'univers_visit_dept': 'Kende na eteni oyo',
 
+      // Departements / Univers Details
+      'dept_back_btn': 'Zonga na GREAT MINDS GROUP',
+      'dept_header_badge': 'ETENI YA GREAT MINDS GROUP',
+      'dept_title_prefix': 'Mokili ya',
+      'dept_pubs_badge': 'SANGO & MAKAMBO YA ETENI OYO',
+      'dept_pubs_title': 'Masolo ya eteni oyo',
+      'dept_offers_badge': 'BILOKO & MABAKU OYO EZALI',
+      'dept_offers_title': 'Misala & Biloko ya eteni oyo',
+      'dept_services_badge': 'MISALA & MAYELE',
+      'dept_services_title': 'Makoki na biso mpo na yo',
+      'dept_order_btn': 'Senga / Somba',
+      'dept_details_btn': 'Tala makambo nyonso',
+
       // Offers Section
       'offers_section_badge': 'MABAKU & MISALA',
       'offers_section_title': 'Luka mosala oyo ebongi na yo.',
@@ -278,6 +392,16 @@ class AppTranslations {
       'offers_apply_whatsapp': 'Koma na WhatsApp',
       'offers_view_details': 'Tala makambo nyonso',
       'offers_empty': 'Mosala ezwami te.',
+      'offers_urgent_badge': 'Ya noki',
+      'offers_deadline_prefix': 'Suka ya mikolo: ',
+      'offers_urgent_banner': 'Mosala ya noki - Tokotala yango liboso',
+      'offers_loc_label': 'Esika',
+      'offers_price_label': 'Lufutu / Talo',
+      'offers_deadline_label': 'Suka ya mikolo',
+      'offers_desc_title': 'Ndimbola ya mosala & Misala',
+      'offers_reqs_title': 'Makoki oyo esengeli',
+      'offers_close_btn': 'Kanga',
+      'offers_apply_dialog_btn': 'Koma na WhatsApp mpo na mosala',
 
       // Publications Section
       'pubs_section_badge': 'SANGO & MAKAMBO YA SIKA',
@@ -292,7 +416,10 @@ class AppTranslations {
       'pubs_follow': 'Landa',
       'pubs_following': 'Olandi',
       'pubs_followers': 'Balandi',
-      'pubs_follow_success': 'Olandi sikoyo lisolo oyo !',
+      'pubs_follow_success': '✓ Olandi sikoyo lisolo oyo !',
+      'pubs_reads': 'batangi',
+      'pubs_question_cta': 'Ozali na motuna mpo na lisolo oyo ?',
+      'pubs_chat_btn': 'Solola na WhatsApp',
 
       // About Section
       'about_badge': 'MPO NA BISO',
@@ -322,16 +449,28 @@ class AppTranslations {
       'language': 'Monoko',
     },
     'sw': {
-      // Swahili
+      // Kiswahili
+      // Nav & Drawer
       'nav_home': 'Mwanzo',
       'nav_activities': 'Sekta Zetu',
       'nav_offers': 'Kazi & Mafunzo',
       'nav_publications': 'Habari',
+      'nav_univers': 'Sekta za GM',
+      'nav_about': 'Kuhusu Sisi',
+      'nav_method': 'Mfumo Wetu',
       'nav_contact': 'Mawasiliano',
       'nav_admin': 'Utawala',
       'nav_install': 'Sakinisha App',
       'nav_sync_tooltip': 'Usawazishaji otomatiki (10s)',
       'nav_sync_success': '✓ Taarifa zimesasishwa kikamilifu!',
+      'drawer_sync_subtitle': 'Usasishaji wa moja kwa moja (10s)',
+      'drawer_admin_subtitle': 'Kuingia kwa msimamizi',
+      'drawer_news_subtitle': 'Makala, matangazo na taarifa',
+      'drawer_offers_subtitle': 'Kazi, ufadhili na mafunzo',
+      'drawer_services_subtitle': 'Ushauri, Mafunzo na Miradi',
+      'drawer_univers_subtitle': 'Idara na vitengo vyetu',
+      'drawer_about_subtitle': 'Dhamira na uongozi wetu',
+      'drawer_method_subtitle': 'Hatua zetu za mafanikio',
 
       // Hero
       'hero_badge': 'KIKUNDI CHA SEKTA NYINGI NA MAENDELEO',
@@ -340,6 +479,11 @@ class AppTranslations {
       'hero_subtitle': 'Ufumbuzi madhubuti wa mafunzo ya kitaaluma, ajira, na kuunda fursa endelevu nchini DR Congo na kote ulimwenguni.',
       'hero_btn_offers': 'Chunguza Fursa',
       'hero_btn_contact': 'Wasiliana nasi kupitia WhatsApp',
+      'hero_pill_emploi': 'Mafunzo & Ajira',
+      'hero_pill_parfum': 'GM Manukato',
+      'hero_pill_texa': 'GM Texa (Visa & Ndege)',
+      'hero_pill_auto': 'GM Magari',
+      'hero_pill_fondation': 'GM Taasisi',
 
       // Vision Card
       'vision_title': 'Maono & Matokeo',
@@ -374,6 +518,19 @@ class AppTranslations {
       'univers_subtitle': 'GREAT MINDS GROUP inakusanya idara maalum kutatua mahitaji halisi.',
       'univers_visit_dept': 'Tembelea idara',
 
+      // Departements / Univers Details
+      'dept_back_btn': 'Rudi GREAT MINDS GROUP',
+      'dept_header_badge': 'IDARA YA GREAT MINDS GROUP',
+      'dept_title_prefix': 'Sekta ya',
+      'dept_pubs_badge': 'HABARI & MATANGAZO YA IDARA',
+      'dept_pubs_title': 'Machapisho ya idara',
+      'dept_offers_badge': 'BIDHAA & FURSA ZILIZOPO',
+      'dept_offers_title': 'Huduma & Fursa za idara',
+      'dept_services_badge': 'HUDUMA & UWEZO',
+      'dept_services_title': 'Faida zetu kwako',
+      'dept_order_btn': 'Agiza / Jiunge',
+      'dept_details_btn': 'Tazama Maelezo',
+
       // Offers Section
       'offers_section_badge': 'FURSA & AJIRA',
       'offers_section_title': 'Pata fursa inayokufaa zaidi.',
@@ -385,6 +542,16 @@ class AppTranslations {
       'offers_apply_whatsapp': 'Tuma Ombi kupitia WhatsApp',
       'offers_view_details': 'Tazama Maelezo',
       'offers_empty': 'Hakuna fursa iliyopatikana.',
+      'offers_urgent_badge': 'Haraka',
+      'offers_deadline_prefix': 'Mwisho: ',
+      'offers_urgent_banner': 'Fursa ya dharura - Maombi yatapitiwa haraka',
+      'offers_loc_label': 'Mahali',
+      'offers_price_label': 'Mshahara / Gharama',
+      'offers_deadline_label': 'Mwisho wa Maombi',
+      'offers_desc_title': 'Maelezo ya Kazi & Majukumu',
+      'offers_reqs_title': 'Sifa Zinazohitajika',
+      'offers_close_btn': 'Funga',
+      'offers_apply_dialog_btn': 'Tuma Ombi kupitia WhatsApp',
 
       // Publications Section
       'pubs_section_badge': 'HABARI & MATUKIO',
@@ -399,7 +566,10 @@ class AppTranslations {
       'pubs_follow': 'Fuata',
       'pubs_following': 'Umfuasi',
       'pubs_followers': 'Wafuasi',
-      'pubs_follow_success': 'Sasa unafuata chapisho hili !',
+      'pubs_follow_success': '✓ Sasa unafuata chapisho hili !',
+      'pubs_reads': 'wasomaji',
+      'pubs_question_cta': 'Una swali kuhusu chapisho hili ?',
+      'pubs_chat_btn': 'Wasiliana kupitia WhatsApp',
 
       // About Section
       'about_badge': 'KUHUSU SISI',

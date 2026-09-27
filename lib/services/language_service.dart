@@ -50,42 +50,51 @@ class LanguageService extends ChangeNotifier {
       if (savedLang != null && _isSupported(savedLang)) {
         _currentLanguage = savedLang;
       } else {
-        // Auto-détection de la langue du système / pays / navigateur du visiteur
-        final deviceLocales = ui.PlatformDispatcher.instance.locales;
-        String? detectedLang;
-
-        for (final loc in deviceLocales) {
-          final lang = loc.languageCode.toLowerCase();
-          final country = loc.countryCode?.toUpperCase() ?? '';
-
-          if (_isSupported(lang)) {
-            detectedLang = lang;
-            break;
-          }
-
-          // Si le pays ou la région est anglophone
-          if (lang == 'en' || const ['US', 'GB', 'CA', 'AU', 'NG', 'KE', 'UG', 'ZA', 'GH', 'RW'].contains(country)) {
-            detectedLang = 'en';
-            break;
-          }
-
-          // Si le pays ou la région est swahiliphone
-          if (lang == 'sw' || const ['TZ', 'KE', 'UG', 'BI'].contains(country)) {
-            detectedLang = 'sw';
-            break;
-          }
-        }
-
-        _currentLanguage = detectedLang ?? 'fr';
+        _currentLanguage = _detectDeviceLanguage();
       }
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
       debugPrint('Error initializing LanguageService: $e');
-      _currentLanguage = 'fr';
+      _currentLanguage = _detectDeviceLanguage();
       _isInitialized = true;
       notifyListeners();
     }
+  }
+
+  String _detectDeviceLanguage() {
+    try {
+      final locales = ui.PlatformDispatcher.instance.locales;
+      if (locales.isNotEmpty) {
+        for (final loc in locales) {
+          final lang = loc.languageCode.toLowerCase();
+          final country = loc.countryCode?.toUpperCase() ?? '';
+
+          if (lang.startsWith('en') || const ['US', 'GB', 'CA', 'AU', 'NG', 'KE', 'UG', 'ZA', 'GH', 'RW'].contains(country)) {
+            return 'en';
+          }
+          if (lang.startsWith('sw') || const ['TZ', 'KE', 'UG', 'BI'].contains(country)) {
+            return 'sw';
+          }
+          if (lang.startsWith('ln')) {
+            return 'ln';
+          }
+          if (lang.startsWith('fr') || const ['FR', 'CD', 'CG', 'BE', 'CH', 'CI', 'SN', 'CM', 'GA', 'ML', 'BF', 'NE', 'TG', 'BJ', 'GN', 'MG'].contains(country)) {
+            return 'fr';
+          }
+        }
+      }
+
+      final single = ui.PlatformDispatcher.instance.locale;
+      final singleLang = single.languageCode.toLowerCase();
+      if (singleLang.startsWith('en')) return 'en';
+      if (singleLang.startsWith('sw')) return 'sw';
+      if (singleLang.startsWith('ln')) return 'ln';
+      if (singleLang.startsWith('fr')) return 'fr';
+    } catch (e) {
+      debugPrint('Language auto-detection error: $e');
+    }
+    return 'fr';
   }
 
   bool _isSupported(String code) {

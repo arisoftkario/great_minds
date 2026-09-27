@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/offer_model.dart';
 import '../../../services/app_data_service.dart';
+import '../../../services/language_service.dart';
 
 class OfferDetailDialog extends StatelessWidget {
   final Offer offer;
@@ -25,6 +26,7 @@ class OfferDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final langService = LanguageService();
     final deadlineStr = DateFormat('dd MMMM yyyy', 'fr_FR').format(offer.deadline);
 
     return Dialog(
@@ -94,14 +96,14 @@ class OfferDetailDialog extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppTheme.warningOrange.withValues(alpha: 0.4)),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.bolt_rounded, size: 16, color: AppTheme.warningOrange),
-                            SizedBox(width: 6),
+                            const Icon(Icons.bolt_rounded, size: 16, color: AppTheme.warningOrange),
+                            const SizedBox(width: 6),
                             Text(
-                              'Offre urgente - Traitement prioritaire des candidatures',
-                              style: TextStyle(color: Color(0xFFC05600), fontSize: 12, fontWeight: FontWeight.w800),
+                              langService.t('offers_urgent_banner'),
+                              style: const TextStyle(color: Color(0xFFC05600), fontSize: 12, fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),
@@ -131,17 +133,17 @@ class OfferDetailDialog extends StatelessWidget {
                         spacing: 24,
                         runSpacing: 12,
                         children: [
-                          _infoItem(Icons.location_on_outlined, 'Localisation', offer.location),
+                          _infoItem(Icons.location_on_outlined, langService.t('offers_loc_label'), offer.location),
                           if (offer.salaryOrPrice != null)
-                            _infoItem(Icons.monetization_on_outlined, 'Rémunération / Tarif', offer.salaryOrPrice!),
-                          _infoItem(Icons.event_rounded, 'Date limite', deadlineStr),
+                            _infoItem(Icons.monetization_on_outlined, langService.t('offers_price_label'), offer.salaryOrPrice!),
+                          _infoItem(Icons.event_rounded, langService.t('offers_deadline_label'), deadlineStr),
                         ],
                       ),
                     ),
                     const SizedBox(height: 28),
 
                     // Description
-                    const Text('Description du poste & Missions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                    Text(langService.t('offers_desc_title'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
                     const SizedBox(height: 10),
                     Text(
                       offer.description,
@@ -151,7 +153,7 @@ class OfferDetailDialog extends StatelessWidget {
 
                     // Requirements
                     if (offer.requirements.isNotEmpty) ...[
-                      const Text('Profil recherché & Exigences', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                      Text(langService.t('offers_reqs_title'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
                       const SizedBox(height: 12),
                       ...offer.requirements.map(
                         (req) => Padding(
@@ -190,13 +192,13 @@ class OfferDetailDialog extends StatelessWidget {
                 children: [
                   OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Fermer'),
+                    child: Text(langService.t('offers_close_btn')),
                   ),
                   const Spacer(),
                   FilledButton.icon(
                     onPressed: () => _applyWhatsApp(context),
                     icon: const Icon(Icons.chat_rounded, size: 18),
-                    label: const Text('Postuler / Répondre via WhatsApp'),
+                    label: Text(langService.t('offers_apply_dialog_btn')),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppTheme.accentCyan,
                       foregroundColor: AppTheme.primaryNavy,

@@ -282,12 +282,12 @@ class _OffersSectionState extends State<OffersSection> {
                     color: const Color(0xFFFFE0B2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.flash_on_rounded, size: 12, color: Color(0xFFE65100)),
-                      SizedBox(width: 2),
-                      Text('Urgent', style: TextStyle(color: Color(0xFFE65100), fontWeight: FontWeight.w800, fontSize: 11)),
+                      const Icon(Icons.flash_on_rounded, size: 12, color: Color(0xFFE65100)),
+                      const SizedBox(width: 2),
+                      Text(langService.t('offers_urgent_badge'), style: const TextStyle(color: Color(0xFFE65100), fontWeight: FontWeight.w800, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -296,7 +296,7 @@ class _OffersSectionState extends State<OffersSection> {
               if (!isCompact) ...[
                 const Icon(Icons.event_rounded, size: 15, color: AppTheme.textSecondary),
                 const SizedBox(width: 4),
-                Text('Date limite : $deadlineStr', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                Text('${langService.t('offers_deadline_prefix')}$deadlineStr', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               ],
             ],
           ),

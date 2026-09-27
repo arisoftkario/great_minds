@@ -343,12 +343,12 @@ class _HeroSection extends StatelessWidget {
     Wrap(
       spacing: 10,
       runSpacing: 10,
-      children: const [
-        _Pill(label: 'Formation & Emploi'),
-        _Pill(label: 'GM Parfum'),
-        _Pill(label: 'GM Texa (Visa)'),
-        _Pill(label: 'GM Autosolution'),
-        _Pill(label: 'GM Fondation'),
+      children: [
+        _Pill(label: LanguageService().t('hero_pill_emploi')),
+        _Pill(label: LanguageService().t('hero_pill_parfum')),
+        _Pill(label: LanguageService().t('hero_pill_texa')),
+        _Pill(label: LanguageService().t('hero_pill_auto')),
+        _Pill(label: LanguageService().t('hero_pill_fondation')),
       ],
     ),
     const SizedBox(height: 34),
@@ -409,8 +409,8 @@ class _Navigation extends StatelessWidget {
             TextButton(onPressed: () => onNavigate('news'), child: Text(LanguageService().t('nav_publications'), style: const TextStyle(color: AppTheme.accentCyan, fontWeight: FontWeight.w700))),
             TextButton(onPressed: () => onNavigate('offers'), child: Text(LanguageService().t('nav_offers'), style: const TextStyle(color: Colors.white70))),
             TextButton(onPressed: () => onNavigate('services'), child: Text(LanguageService().t('nav_activities'), style: const TextStyle(color: Colors.white70))),
-            TextButton(onPressed: () => onNavigate('univers'), child: const Text('Univers GM', style: TextStyle(color: Colors.white70))),
-            TextButton(onPressed: () => onNavigate('about'), child: Text(LanguageService().t('nav_contact'), style: const TextStyle(color: Colors.white70))),
+            TextButton(onPressed: () => onNavigate('univers'), child: Text(LanguageService().t('nav_univers'), style: const TextStyle(color: Colors.white70))),
+            TextButton(onPressed: () => onNavigate('about'), child: Text(LanguageService().t('nav_about'), style: const TextStyle(color: Colors.white70))),
             const SizedBox(width: 8),
           ],
           // Language Switcher Dropdown (Reactive)
@@ -1461,7 +1461,7 @@ class _DepartmentPage extends StatelessWidget {
                         TextButton.icon(
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.arrow_back_rounded),
-                          label: const Text('Retour à GREAT MINDS GROUP'),
+                          label: Text(LanguageService().t('dept_back_btn')),
                           style: TextButton.styleFrom(foregroundColor: const Color(0xFFB9DDF5)),
                         ),
                         const SizedBox(height: 42),
@@ -1472,9 +1472,9 @@ class _DepartmentPage extends StatelessWidget {
                             final details = Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'DÉPARTEMENT GREAT MINDS GROUP',
-                                  style: TextStyle(
+                                Text(
+                                  LanguageService().t('dept_header_badge'),
+                                  style: const TextStyle(
                                     color: Color(0xFF59D6B6),
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.8,
@@ -1483,7 +1483,7 @@ class _DepartmentPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'L’univers ${activity.title}',
+                                  '${LanguageService().t('dept_title_prefix')} ${activity.title}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
@@ -1552,9 +1552,9 @@ class _DepartmentPage extends StatelessWidget {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'ACTUALITÉS & ANNONCES DU DÉPARTEMENT',
-                                      style: TextStyle(
+                                    Text(
+                                      LanguageService().t('dept_pubs_badge'),
+                                      style: const TextStyle(
                                         color: Color(0xFF1B7AE6),
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1.8,
@@ -1563,7 +1563,7 @@ class _DepartmentPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Publications de ${activity.title}',
+                                      '${LanguageService().t('dept_pubs_title')} (${activity.title})',
                                       style: const TextStyle(
                                         color: Color(0xFF061A2E),
                                         fontSize: 32,
@@ -1648,9 +1648,9 @@ class _DepartmentPage extends StatelessWidget {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'PRODUITS & OPPORTUNITÉS DISPONIBLES',
-                                      style: TextStyle(
+                                    Text(
+                                      LanguageService().t('dept_offers_badge'),
+                                      style: const TextStyle(
                                         color: Color(0xFF1B7AE6),
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1.8,
@@ -1659,7 +1659,7 @@ class _DepartmentPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Catalogue & offres de ${activity.title}',
+                                      '${LanguageService().t('dept_offers_title')} (${activity.title})',
                                       style: const TextStyle(
                                         color: Color(0xFF061A2E),
                                         fontSize: 32,
@@ -1720,14 +1720,14 @@ class _DepartmentPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'CE QUE VOUS TROUVEREZ',
-                          style: TextStyle(color: Color(0xFF1B7AE6), fontWeight: FontWeight.w800, letterSpacing: 1.8, fontSize: 12),
+                        Text(
+                          LanguageService().t('dept_services_badge'),
+                          style: const TextStyle(color: Color(0xFF1B7AE6), fontWeight: FontWeight.w800, letterSpacing: 1.8, fontSize: 12),
                         ),
                         const SizedBox(height: 14),
-                        const Text(
-                          'Des exemples d’offres pour votre projet.',
-                          style: TextStyle(color: Color(0xFF061A2E), fontSize: 34, fontWeight: FontWeight.w800, height: 1.1),
+                        Text(
+                          LanguageService().t('dept_services_title'),
+                          style: const TextStyle(color: Color(0xFF061A2E), fontSize: 34, fontWeight: FontWeight.w800, height: 1.1),
                         ),
                         const SizedBox(height: 32),
                         LayoutBuilder(
@@ -1867,7 +1867,7 @@ class _DepartmentPublicationCard extends StatelessWidget {
                         );
                       },
                       icon: const Icon(Icons.arrow_forward_rounded, size: 14),
-                      label: const Text('Lire l’article'),
+                      label: Text(LanguageService().t('pubs_read_more')),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF061A2E),
                         foregroundColor: Colors.white,
@@ -2086,7 +2086,7 @@ class _DepartmentProductCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('Fiche détaillée', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  child: Text(LanguageService().t('dept_details_btn'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -2094,7 +2094,7 @@ class _DepartmentProductCard extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => _orderViaWhatsApp(context),
                   icon: const Icon(Icons.shopping_bag_rounded, size: 15),
-                  label: const Text('Commander', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  label: Text(LanguageService().t('dept_order_btn'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1B7AE6),
                     foregroundColor: Colors.white,
@@ -2709,8 +2709,8 @@ class _MobileDrawer extends StatelessWidget {
                   _drawerItem(
                     icon: Icons.newspaper_rounded,
                     title: LanguageService().t('nav_publications'),
-                    subtitle: 'Articles, communiqués & annonces',
-                    badge: 'ACTUALITÉS',
+                    subtitle: LanguageService().t('drawer_news_subtitle'),
+                    badge: LanguageService().t('nav_publications').toUpperCase(),
                     isAccent: true,
                     onTap: () {
                       Navigator.of(context).pop();
@@ -2720,7 +2720,7 @@ class _MobileDrawer extends StatelessWidget {
                   _drawerItem(
                     icon: Icons.work_rounded,
                     title: LanguageService().t('nav_offers'),
-                    subtitle: 'Emplois, bourses & stages',
+                    subtitle: LanguageService().t('drawer_offers_subtitle'),
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('offers');
@@ -2729,7 +2729,7 @@ class _MobileDrawer extends StatelessWidget {
                   _drawerItem(
                     icon: Icons.business_center_rounded,
                     title: LanguageService().t('nav_activities'),
-                    subtitle: 'Conseil, Formation & Projets',
+                    subtitle: LanguageService().t('drawer_services_subtitle'),
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('services');
@@ -2737,8 +2737,8 @@ class _MobileDrawer extends StatelessWidget {
                   ),
                   _drawerItem(
                     icon: Icons.domain_rounded,
-                    title: 'Univers GM',
-                    subtitle: 'Nos départements et filiales',
+                    title: LanguageService().t('nav_univers'),
+                    subtitle: LanguageService().t('drawer_univers_subtitle'),
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('univers');
@@ -2746,8 +2746,8 @@ class _MobileDrawer extends StatelessWidget {
                   ),
                   _drawerItem(
                     icon: Icons.info_outline_rounded,
-                    title: LanguageService().t('nav_contact'),
-                    subtitle: 'Notre mission & équipe',
+                    title: LanguageService().t('nav_about'),
+                    subtitle: LanguageService().t('drawer_about_subtitle'),
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('about');
@@ -2755,8 +2755,8 @@ class _MobileDrawer extends StatelessWidget {
                   ),
                   _drawerItem(
                     icon: Icons.route_rounded,
-                    title: 'Méthodologie & Process',
-                    subtitle: 'Notre démarche étape par étape',
+                    title: LanguageService().t('nav_method'),
+                    subtitle: LanguageService().t('drawer_method_subtitle'),
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('method');
@@ -2788,9 +2788,9 @@ class _MobileDrawer extends StatelessWidget {
                           LanguageService().t('nav_sync_tooltip'),
                           style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                         ),
-                        subtitle: const Text(
-                          'Mise à jour en direct (10s auto)',
-                          style: TextStyle(color: Colors.white54, fontSize: 11),
+                        subtitle: Text(
+                          LanguageService().t('drawer_sync_subtitle'),
+                          style: const TextStyle(color: Colors.white54, fontSize: 11),
                         ),
                         onTap: () async {
                           await AppDataService().syncData();
@@ -2815,9 +2815,9 @@ class _MobileDrawer extends StatelessWidget {
                       LanguageService().t('nav_admin'),
                       style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text(
-                      'Connexion administrateur',
-                      style: TextStyle(color: Colors.white54, fontSize: 11),
+                    subtitle: Text(
+                      LanguageService().t('drawer_admin_subtitle'),
+                      style: const TextStyle(color: Colors.white54, fontSize: 11),
                     ),
                     onTap: () {
                       Navigator.of(context).pop();
