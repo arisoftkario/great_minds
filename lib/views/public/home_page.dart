@@ -16,6 +16,7 @@ import 'widgets/offer_detail_dialog.dart';
 import 'widgets/offers_section.dart';
 import 'widgets/publication_detail_dialog.dart';
 import 'widgets/publications_section.dart';
+import 'widgets/subscription_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -197,10 +198,13 @@ class _HomePageState extends State<HomePage> {
                 // 8. Process / Method
                 Container(key: _methodKey, child: const _ProcessSection()),
 
-                // 9. CTA
+                // 9. Community & Subscription Section
+                const SubscriptionSection(),
+
+                // 10. CTA
                 _CTASection(onContact: _openWhatsApp),
 
-                // 10. Footer
+                // 11. Footer
                 _Footer(
                   onContact: _openWhatsApp,
                   onAdminPortal: _openAdminPortal,

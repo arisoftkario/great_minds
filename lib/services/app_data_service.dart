@@ -6,6 +6,8 @@ import '../core/constants/app_constants.dart';
 import '../models/publication_model.dart';
 import '../models/offer_model.dart';
 import '../models/activity_model.dart';
+import '../models/subscriber_model.dart';
+import '../models/admin_notification_model.dart';
 
 class AppDataService extends ChangeNotifier {
   static final AppDataService _instance = AppDataService._internal();
@@ -14,6 +16,8 @@ class AppDataService extends ChangeNotifier {
 
   List<Publication> _publications = [];
   List<Offer> _offers = [];
+  List<Subscriber> _subscribers = [];
+  List<AdminNotification> _notifications = [];
   String _whatsAppNumber = AppConstants.whatsAppNumber;
   bool _isInitialized = false;
   DateTime? _lastSyncTime;
@@ -23,6 +27,9 @@ class AppDataService extends ChangeNotifier {
 
   List<Publication> get publications => List.unmodifiable(_publications);
   List<Offer> get offers => List.unmodifiable(_offers);
+  List<Subscriber> get subscribers => List.unmodifiable(_subscribers);
+  List<AdminNotification> get notifications => List.unmodifiable(_notifications);
+  int get unreadNotificationsCount => _notifications.where((n) => !n.isRead).length;
   String get whatsAppNumber => _whatsAppNumber;
   bool get isInitialized => _isInitialized;
   DateTime? get lastSyncTime => _lastSyncTime;
@@ -39,6 +46,8 @@ class AppDataService extends ChangeNotifier {
 
   static const String _publicationsKey = 'gm_publications_data_v1';
   static const String _offersKey = 'gm_offers_data_v1';
+  static const String _subscribersKey = 'gm_subscribers_data_v1';
+  static const String _notificationsKey = 'gm_admin_notifications_v1';
   static const String _whatsAppKey = 'gm_whatsapp_number_v1';
   static const String _likedPubsKey = 'gm_liked_publications_v1';
   static const String _followedPubsKey = 'gm_followed_publications_v1';
@@ -77,6 +86,24 @@ class AppDataService extends ChangeNotifier {
         await _saveOffers();
       }
 
+      // Subscribers
+      final subJson = prefs.getString(_subscribersKey);
+      if (subJson != null && subJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(subJson);
+        _subscribers = decoded.map((item) => Subscriber.fromJson(item)).toList();
+      } else {
+        _subscribers = [];
+      }
+
+      // Notifications
+      final notifJson = prefs.getString(_notificationsKey);
+      if (notifJson != null && notifJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(notifJson);
+        _notifications = decoded.map((item) => AdminNotification.fromJson(item)).toList();
+      } else {
+        _notifications = [];
+      }
+
       // Liked & Followed Sets
       final likedList = prefs.getStringList(_likedPubsKey);
       if (likedList != null) {
@@ -95,6 +122,8 @@ class AppDataService extends ChangeNotifier {
       debugPrint('Error loading AppDataService: $e');
       _publications = _getDefaultPublications();
       _offers = _getDefaultOffers();
+      _subscribers = [];
+      _notifications = [];
       _isInitialized = true;
       _lastSyncTime = DateTime.now();
       startAutoSync(); // Lance l'auto-synchronisation automatique toutes les 10 secondes
@@ -148,13 +177,33 @@ class AppDataService extends ChangeNotifier {
         newOffers = decoded.map((item) => Offer.fromJson(item)).toList();
       }
 
+      // Subscribers
+      List<Subscriber> newSubscribers = _subscribers;
+      final subJson = prefs.getString(_subscribersKey);
+      if (subJson != null && subJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(subJson);
+        newSubscribers = decoded.map((item) => Subscriber.fromJson(item)).toList();
+      }
+
+      // Notifications
+      List<AdminNotification> newNotifications = _notifications;
+      final notifJson = prefs.getString(_notificationsKey);
+      if (notifJson != null && notifJson.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(notifJson);
+        newNotifications = decoded.map((item) => AdminNotification.fromJson(item)).toList();
+      }
+
       _whatsAppNumber = newWhatsApp;
       _publications = newPublications;
       _offers = newOffers;
+      _subscribers = newSubscribers;
+      _notifications = newNotifications;
 
       // Sauvegarde explicite pour persistance maximale
       await _savePublications();
       await _saveOffers();
+      await _saveSubscribers();
+      await _saveNotifications();
 
       _lastSyncTime = DateTime.now();
       _isSyncing = false;
@@ -211,6 +260,15 @@ class AppDataService extends ChangeNotifier {
       } else {
         _likedPublicationIds.add(id);
         newLikes = newLikes + 1;
+        // Créer une notification pour l'administrateur
+        addNotification(AdminNotification(
+          id: 'notif_like_${DateTime.now().millisecondsSinceEpoch}',
+          title: 'Nouveau Like 👍',
+          message: 'Un visiteur a aimé la publication : "${pub.title}"',
+          type: 'like',
+          createdAt: DateTime.now(),
+          data: {'publicationId': pub.id, 'title': pub.title},
+        ));
       }
       _publications[index] = pub.copyWith(likesCount: newLikes);
       await _savePublications();
@@ -246,6 +304,88 @@ class AppDataService extends ChangeNotifier {
       await prefs.setStringList(_followedPubsKey, _followedPublicationIds.toList());
     } catch (e) {
       debugPrint('Error saving liked/followed: $e');
+    }
+  }
+
+  // --- Subscribers ---
+  Future<bool> addSubscriber(Subscriber subscriber) async {
+    final exists = _subscribers.any(
+      (s) => s.email.trim().toLowerCase() == subscriber.email.trim().toLowerCase(),
+    );
+    if (exists) {
+      return false;
+    }
+    _subscribers.insert(0, subscriber);
+    await _saveSubscribers();
+
+    // Auto-create Admin Notification
+    final notif = AdminNotification(
+      id: 'notif_sub_${DateTime.now().millisecondsSinceEpoch}',
+      title: 'Nouvel Abonné 🎉',
+      message: '${subscriber.fullName?.isNotEmpty == true ? subscriber.fullName : subscriber.email} vient de s\'abonner à Great Minds Group (${subscriber.email}).',
+      type: 'subscription',
+      createdAt: DateTime.now(),
+      data: subscriber.toJson(),
+    );
+    await addNotification(notif);
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> deleteSubscriber(String id) async {
+    _subscribers.removeWhere((s) => s.id == id);
+    await _saveSubscribers();
+    notifyListeners();
+  }
+
+  Future<void> _saveSubscribers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_subscribers.map((s) => s.toJson()).toList());
+      await prefs.setString(_subscribersKey, encoded);
+    } catch (e) {
+      debugPrint('Error saving subscribers: $e');
+    }
+  }
+
+  // --- Admin Notifications ---
+  Future<void> addNotification(AdminNotification notification) async {
+    _notifications.insert(0, notification);
+    if (_notifications.length > 200) {
+      _notifications = _notifications.sublist(0, 200);
+    }
+    await _saveNotifications();
+    notifyListeners();
+  }
+
+  Future<void> markNotificationAsRead(String id) async {
+    final index = _notifications.indexWhere((n) => n.id == id);
+    if (index != -1) {
+      _notifications[index] = _notifications[index].copyWith(isRead: true);
+      await _saveNotifications();
+      notifyListeners();
+    }
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+    await _saveNotifications();
+    notifyListeners();
+  }
+
+  Future<void> clearNotifications() async {
+    _notifications.clear();
+    await _saveNotifications();
+    notifyListeners();
+  }
+
+  Future<void> _saveNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_notifications.map((n) => n.toJson()).toList());
+      await prefs.setString(_notificationsKey, encoded);
+    } catch (e) {
+      debugPrint('Error saving notifications: $e');
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/offer_model.dart';
@@ -16,9 +17,10 @@ class AdminDashboardView extends StatefulWidget {
 }
 
 class _AdminDashboardViewState extends State<AdminDashboardView> {
-  int _selectedTabIndex = 0; // 0: Overview, 1: Publications, 2: Offers, 3: Settings
+  int _selectedTabIndex = 0; // 0: Overview, 1: Publications, 2: Offers, 3: Notifications, 4: Subscribers, 5: Settings
   final TextEditingController _searchPubController = TextEditingController();
   final TextEditingController _searchOfferController = TextEditingController();
+  final TextEditingController _searchSubscriberController = TextEditingController();
   String _filterPubCategory = 'Tous';
   String _filterPubDept = 'Tous';
   String _filterOfferDept = 'Tous';
@@ -39,6 +41,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   void dispose() {
     _searchPubController.dispose();
     _searchOfferController.dispose();
+    _searchSubscriberController.dispose();
     super.dispose();
   }
 
@@ -268,6 +271,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       case 2:
         return 'Gestion des Offres & Opportunités';
       case 3:
+        return 'Centre de Notifications & Interactions';
+      case 4:
+        return 'Gestion des Abonnés & Communauté';
+      case 5:
         return 'Paramètres & Configuration';
       default:
         return 'Administration';
@@ -276,6 +283,9 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
   // --- Sidebar ---
   Widget _buildSidebar({bool isDrawer = false}) {
+    final unreadCount = AppDataService().unreadNotificationsCount;
+    final totalSubscribers = AppDataService().subscribers.length;
+
     return Container(
       width: 260,
       color: AppTheme.primaryNavy,
@@ -325,7 +335,20 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 _sidebarItem(0, Icons.dashboard_rounded, 'Vue d’ensemble'),
                 _sidebarItem(1, Icons.article_rounded, 'Publications & Actus'),
                 _sidebarItem(2, Icons.work_outline_rounded, 'Offres & Emploi'),
-                _sidebarItem(3, Icons.settings_rounded, 'Paramètres'),
+                _sidebarItem(
+                  3,
+                  Icons.notifications_active_rounded,
+                  'Notifications & Likes',
+                  badgeCount: unreadCount,
+                ),
+                _sidebarItem(
+                  4,
+                  Icons.people_alt_rounded,
+                  'Abonnés & Newsletter',
+                  badgeCount: totalSubscribers,
+                  badgeColor: const Color(0xFF10B981),
+                ),
+                _sidebarItem(5, Icons.settings_rounded, 'Paramètres'),
               ],
             ),
           ),
@@ -385,14 +408,43 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     );
   }
 
-  Widget _sidebarItem(int index, IconData icon, String title) {
+  Widget _sidebarItem(
+    int index,
+    IconData icon,
+    String title, {
+    int badgeCount = 0,
+    Color badgeColor = const Color(0xFFEF4444),
+  }) {
     final isSelected = _selectedTabIndex == index;
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       child: ListTile(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         tileColor: isSelected ? AppTheme.accentBlue : Colors.transparent,
-        leading: Icon(icon, color: isSelected ? Colors.white : const Color(0xFF8BAFCF), size: 20),
+        leading: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : const Color(0xFF8BAFCF), size: 20),
+            if (badgeCount > 0)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: badgeColor,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                  child: Text(
+                    badgeCount > 99 ? '99+' : '$badgeCount',
+                    style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
         title: Text(
           title,
           style: TextStyle(
@@ -401,6 +453,19 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             fontSize: 14,
           ),
         ),
+        trailing: badgeCount > 0
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$badgeCount',
+                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              )
+            : null,
         onTap: () {
           setState(() => _selectedTabIndex = index);
           if (Navigator.of(context).canPop() && MediaQuery.sizeOf(context).width < 900) {
@@ -421,6 +486,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       case 2:
         return _buildOffersTab(service);
       case 3:
+        return _buildNotificationsTab(service);
+      case 4:
+        return _buildSubscribersTab(service);
+      case 5:
         return _buildSettingsTab(service);
       default:
         return _buildOverviewTab(service);
@@ -437,6 +506,8 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     final activeOffers = service.activeOffers.length;
     final urgentOffers = service.offers.where((o) => o.isUrgent && o.isActive).length;
     final totalViews = service.publications.fold<int>(0, (sum, p) => sum + p.viewsCount);
+    final totalLikes = service.publications.fold<int>(0, (sum, p) => sum + p.likesCount);
+    final totalSubscribers = service.subscribers.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,7 +515,9 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
         // Quick Stats Cards
         LayoutBuilder(
           builder: (context, constraints) {
-            final cardWidth = constraints.maxWidth < 600 ? double.infinity : (constraints.maxWidth - 36) / (constraints.maxWidth < 1100 ? 2 : 4);
+            final cardWidth = constraints.maxWidth < 600
+                ? double.infinity
+                : (constraints.maxWidth - 36) / (constraints.maxWidth < 1100 ? 2 : 3);
             return Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -472,11 +545,21 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 SizedBox(
                   width: cardWidth,
                   child: _statCard(
-                    'Offres Urgentes',
-                    '$urgentOffers',
-                    Icons.flash_on_rounded,
-                    AppTheme.warningOrange,
-                    'Priorité recrutement',
+                    'Total Abonnés',
+                    '$totalSubscribers',
+                    Icons.people_alt_rounded,
+                    const Color(0xFF10B981),
+                    'Newsletter & Communauté',
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _statCard(
+                    'Likes visiteurs',
+                    '$totalLikes',
+                    Icons.thumb_up_alt_rounded,
+                    const Color(0xFFE11D48),
+                    'Interactions enregistrées',
                   ),
                 ),
                 SizedBox(
@@ -487,6 +570,16 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                     Icons.remove_red_eye_rounded,
                     const Color(0xFF8E44AD),
                     'Impact publications',
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _statCard(
+                    'Offres Urgentes',
+                    '$urgentOffers',
+                    Icons.flash_on_rounded,
+                    AppTheme.warningOrange,
+                    'Priorité recrutement',
                   ),
                 ),
               ],
@@ -1414,6 +1507,467 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 3: CENTRE DE NOTIFICATIONS (NOTIFICATIONS & LIKES)
+  // ==========================================
+  Widget _buildNotificationsTab(AppDataService service) {
+    final notifs = service.notifications;
+    final unreadCount = service.unreadNotificationsCount;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Centre de Notifications & Likes',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                    ),
+                    if (unreadCount > 0) ...[
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$unreadCount non lue${unreadCount > 1 ? 's' : ''}',
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Alertes en temps réel à chaque nouvel abonné ou like sur le site.',
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                if (unreadCount > 0)
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      service.markAllNotificationsAsRead();
+                      _showToast('Toutes les notifications ont été marquées comme lues.');
+                    },
+                    icon: const Icon(Icons.done_all_rounded, size: 16),
+                    label: const Text('Tout marquer comme lu'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.accentBlue,
+                      side: const BorderSide(color: AppTheme.accentBlue),
+                    ),
+                  ),
+                const SizedBox(width: 8),
+                if (notifs.isNotEmpty)
+                  IconButton(
+                    tooltip: 'Effacer l’historique',
+                    icon: const Icon(Icons.delete_sweep_outlined, color: AppTheme.textSecondary),
+                    onPressed: () {
+                      showDialog<void>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Effacer les notifications'),
+                          content: const Text('Voulez-vous vraiment vider tout l’historique des notifications ?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                service.clearNotifications();
+                                _showToast('Historique des notifications effacé.');
+                              },
+                              style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+                              child: const Text('Effacer'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Notifications List
+        if (notifs.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(48),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.borderSubtle),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentBlue.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.notifications_none_rounded, size: 48, color: AppTheme.accentBlue),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Aucune notification pour le moment',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Dès qu’un visiteur s’abonne ou aime une publication, une notification apparaîtra ici.',
+                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: notifs.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final notif = notifs[index];
+              final isLike = notif.type == 'like';
+              final isSub = notif.type == 'subscription';
+
+              final icon = isSub
+                  ? Icons.celebration_rounded
+                  : (isLike ? Icons.thumb_up_alt_rounded : Icons.notifications_rounded);
+              final iconBg = isSub
+                  ? const Color(0xFF10B981)
+                  : (isLike ? const Color(0xFFE11D48) : AppTheme.accentBlue);
+
+              return InkWell(
+                onTap: () => service.markNotificationAsRead(notif.id),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: notif.isRead ? Colors.white : const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: notif.isRead ? AppTheme.borderSubtle : const Color(0xFF93C5FD),
+                      width: notif.isRead ? 1 : 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: iconBg.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, color: iconBg, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  notif.title,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: notif.isRead ? FontWeight.w600 : FontWeight.w800,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat('dd/MM/yyyy HH:mm').format(notif.createdAt),
+                                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              notif.message,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: notif.isRead ? AppTheme.textSecondary : const Color(0xFF1E293B),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!notif.isRead) ...[
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF3B82F6),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // TAB 4: GESTION DES ABONNÉS (COMMUNAUTÉ)
+  // ==========================================
+  Widget _buildSubscribersTab(AppDataService service) {
+    final query = _searchSubscriberController.text.trim().toLowerCase();
+    final allSubscribers = service.subscribers;
+    final filtered = query.isEmpty
+        ? allSubscribers
+        : allSubscribers.where((s) {
+            final email = s.email.toLowerCase();
+            final name = (s.fullName ?? '').toLowerCase();
+            final phone = (s.phone ?? '').toLowerCase();
+            return email.contains(query) || name.contains(query) || phone.contains(query);
+          }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Gestion des Abonnés & Newsletter',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textPrimary),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${allSubscribers.length} Abonnés',
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Liste des visiteurs et candidats inscrits pour recevoir vos opportunités et actualités.',
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                ),
+              ],
+            ),
+            if (allSubscribers.isNotEmpty)
+              FilledButton.icon(
+                onPressed: () {
+                  final emails = allSubscribers.map((s) => s.email).join(', ');
+                  Clipboard.setData(ClipboardData(text: emails));
+                  _showToast('📋 ${allSubscribers.length} adresses emails copiées dans le presse-papier !');
+                },
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: const Text('Copier les emails'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.accentBlue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Search Bar
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.borderSubtle),
+          ),
+          child: TextField(
+            controller: _searchSubscriberController,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              icon: const Icon(Icons.search, color: AppTheme.textSecondary),
+              hintText: 'Rechercher par email, nom ou téléphone...',
+              hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+              border: InputBorder.none,
+              suffixIcon: query.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () {
+                        _searchSubscriberController.clear();
+                        setState(() {});
+                      },
+                    )
+                  : null,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Subscribers Table / List
+        if (filtered.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.borderSubtle),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  const Icon(Icons.people_outline_rounded, size: 48, color: AppTheme.textSecondary),
+                  const SizedBox(height: 12),
+                  Text(
+                    query.isEmpty ? 'Aucun abonné enregistré' : 'Aucun résultat trouvé pour "$query"',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Les nouveaux abonnés inscrits depuis le formulaire s’afficheront directement ici.',
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: filtered.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final sub = filtered[index];
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppTheme.borderSubtle),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: const Color(0xFF10B981).withOpacity(0.15),
+                      child: Text(
+                        (sub.fullName?.isNotEmpty == true ? sub.fullName![0] : sub.email[0]).toUpperCase(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                sub.fullName?.isNotEmpty == true ? sub.fullName! : 'Abonné(e)',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textPrimary),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Lang: ${sub.language.toUpperCase()}',
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.email_outlined, size: 14, color: AppTheme.textSecondary),
+                              const SizedBox(width: 4),
+                              Text(sub.email, style: const TextStyle(fontSize: 13, color: AppTheme.accentBlue)),
+                              if (sub.phone?.isNotEmpty == true) ...[
+                                const SizedBox(width: 12),
+                                const Icon(Icons.phone_outlined, size: 14, color: AppTheme.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(sub.phone!, style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      DateFormat('dd/MM/yyyy').format(sub.subscribedAt),
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: AppTheme.errorRed, size: 18),
+                      tooltip: 'Supprimer cet abonné',
+                      onPressed: () {
+                        showDialog<void>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Supprimer l’abonné'),
+                            content: Text('Voulez-vous supprimer ${sub.email} de la liste ?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  service.deleteSubscriber(sub.id);
+                                  _showToast('Abonné supprimé.');
+                                },
+                                style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+                                child: const Text('Supprimer'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
       ],
     );
   }
