@@ -945,3 +945,117 @@ class _MantraChip extends StatelessWidget {
     );
   }
 }
+
+/// Dialogue plein écran interactif permettant d'afficher l'Histoire et la Vision
+/// de GM Groupe instantanément au clic sur n'importe quel bouton du site
+class InstitutionalHistoryDialog extends StatelessWidget {
+  final void Function(String department)? onOpenDepartment;
+  final VoidCallback? onContact;
+
+  const InstitutionalHistoryDialog({
+    super.key,
+    this.onOpenDepartment,
+    this.onContact,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    void Function(String department)? onOpenDepartment,
+    VoidCallback? onContact,
+  }) {
+    return showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.8),
+      builder: (context) => InstitutionalHistoryDialog(
+        onOpenDepartment: onOpenDepartment,
+        onContact: onContact,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final isMobile = size.width < 760;
+
+    return Dialog(
+      insetPadding: isMobile
+          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 20)
+          : const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: const Color(0xFF071424),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 1100,
+          maxHeight: size.height * 0.92,
+        ),
+        child: Column(
+          children: [
+            // Top Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: const BoxDecoration(
+                color: Color(0xFF061A2E),
+                border: Border(bottom: BorderSide(color: Color(0xFF1B4268))),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF59D6B6).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.account_balance_rounded, color: Color(0xFF59D6B6), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'GM GROUPE – GREAT MINDS',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        Text(
+                          'Histoire, Vision & Présentation Institutionnelle',
+                          style: TextStyle(color: Color(0xFF8FD6FF), fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    tooltip: 'Fermer',
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            // Body
+            Expanded(
+              child: SingleChildScrollView(
+                child: InstitutionalHistorySection(
+                  onOpenDepartment: (dept) {
+                    Navigator.of(context).pop();
+                    onOpenDepartment?.call(dept);
+                  },
+                  onContact: () {
+                    Navigator.of(context).pop();
+                    onContact?.call();
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -105,12 +105,21 @@ class _HomePageState extends State<HomePage> {
         _scrollToKey(_newsKey);
         break;
       case 'about':
-        _scrollToKey(_aboutKey);
+        _openInstitutionalHistory();
         break;
       case 'method':
         _scrollToKey(_methodKey);
         break;
     }
+  }
+
+  void _openInstitutionalHistory() {
+    _scrollToKey(_aboutKey);
+    InstitutionalHistoryDialog.show(
+      context,
+      onOpenDepartment: _openDepartmentByName,
+      onContact: () => _openWhatsApp(),
+    );
   }
 
   void _openDepartmentByName(String deptName) {

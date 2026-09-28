@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -291,10 +292,10 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                   SizedBox(
                     height: 170,
                     width: double.infinity,
-                    child: AppImageViewer(
-                      imageSource: pub.primaryImage,
-                      fit: BoxFit.cover,
-                      errorWidget: _buildCardImagePlaceholder(pub),
+                    child: _PublicationCardSlideshow(
+                      images: pub.allImages,
+                      department: pub.department,
+                      placeholder: _buildCardImagePlaceholder(pub),
                     ),
                   ),
                   // Overlay badge "Voir tous les produits du département"
@@ -788,6 +789,134 @@ class _PublicationsSectionState extends State<PublicationsSection> {
           color: AppTheme.accentCyan.withValues(alpha: 0.8),
         ),
       ),
+    );
+  }
+}
+
+/// Diaporama automatique (Slideshow) pour les publications contenant plusieurs photos
+class _PublicationCardSlideshow extends StatefulWidget {
+  final List<String> images;
+  final String department;
+  final Widget placeholder;
+
+  const _PublicationCardSlideshow({
+    required this.images,
+    required this.department,
+    required this.placeholder,
+  });
+
+  @override
+  State<_PublicationCardSlideshow> createState() => _PublicationCardSlideshowState();
+}
+
+class _PublicationCardSlideshowState extends State<_PublicationCardSlideshow> {
+  late final PageController _pageController;
+  int _currentIndex = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    if (widget.images.length > 1) {
+      _startTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(milliseconds: 3200), (timer) {
+      if (!mounted || widget.images.length <= 1) return;
+      final nextIndex = (_currentIndex + 1) % widget.images.length;
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          nextIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _PublicationCardSlideshow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.images.length != widget.images.length) {
+      if (widget.images.length > 1 && (_timer == null || !_timer!.isActive)) {
+        _startTimer();
+      } else if (widget.images.length <= 1) {
+        _timer?.cancel();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.images.isEmpty) {
+      return widget.placeholder;
+    }
+    if (widget.images.length == 1) {
+      return AppImageViewer(
+        imageSource: widget.images.first,
+        fit: BoxFit.cover,
+        errorWidget: widget.placeholder,
+      );
+    }
+
+    return Stack(
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          itemCount: widget.images.length,
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            return AppImageViewer(
+              imageSource: widget.images[index],
+              fit: BoxFit.cover,
+              errorWidget: widget.placeholder,
+            );
+          },
+        ),
+        // Dots indicator
+        Positioned(
+          bottom: 8,
+          right: 8,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(widget.images.length, (index) {
+                final isSelected = _currentIndex == index;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                  width: isSelected ? 14 : 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF59D6B6) : Colors.white60,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

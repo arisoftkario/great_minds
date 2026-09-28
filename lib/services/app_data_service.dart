@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
 import '../models/publication_model.dart';
@@ -14,6 +15,9 @@ class AppDataService extends ChangeNotifier {
   static final AppDataService _instance = AppDataService._internal();
   factory AppDataService() => _instance;
   AppDataService._internal();
+
+  // Cloud Synchronization Endpoint (Partage en temps réel entre PC, téléphones et tous visiteurs)
+  static const String _cloudBaseUrl = 'https://kvdb.io/6Ecw5eC7W6g1m2pG9G2J5Y';
 
   List<Publication> _publications = [];
   List<Offer> _offers = [];
@@ -141,6 +145,9 @@ class AppDataService extends ChangeNotifier {
       _lastSyncTime = DateTime.now();
       startAutoSync(); // Lance l'auto-synchronisation automatique toutes les 10 secondes
       notifyListeners();
+
+      // Synchronisation Cloud immédiate en arrière-plan pour récupérer les données publiées depuis d'autres appareils (PC / mobiles)
+      unawaited(_pullFromCloud(notify: true));
     } catch (e) {
       debugPrint('Error loading AppDataService: $e');
       _publications = _getDefaultPublications();
@@ -152,6 +159,7 @@ class AppDataService extends ChangeNotifier {
       _lastSyncTime = DateTime.now();
       startAutoSync();
       notifyListeners();
+      unawaited(_pullFromCloud(notify: true));
     }
   }
 
@@ -183,10 +191,13 @@ class AppDataService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.reload();
 
-      // WhatsApp Number
+      // 1. Récupération Cloud (Cross-device real-time sync)
+      await _pullFromCloud(notify: false);
+
+      // 2. WhatsApp Number
       final newWhatsApp = prefs.getString(_whatsAppKey) ?? AppConstants.whatsAppNumber;
 
-      // Publications: Non-destructive merge between in-memory and stored data
+      // 3. Publications: Non-destructive merge between in-memory and stored data
       final pubJson = prefs.getString(_publicationsKey);
       if (pubJson != null && pubJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(pubJson);
@@ -201,7 +212,7 @@ class AppDataService extends ChangeNotifier {
         _publications = mergedMap.values.toList();
       }
 
-      // Offers: Non-destructive merge
+      // 4. Offers: Non-destructive merge
       final offerJson = prefs.getString(_offersKey);
       if (offerJson != null && offerJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(offerJson);
@@ -216,7 +227,7 @@ class AppDataService extends ChangeNotifier {
         _offers = mergedOffers.values.toList();
       }
 
-      // Subscribers: Non-destructive merge
+      // 5. Subscribers: Non-destructive merge
       final subJson = prefs.getString(_subscribersKey);
       if (subJson != null && subJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(subJson);
@@ -231,7 +242,7 @@ class AppDataService extends ChangeNotifier {
         _subscribers = mergedSubs.values.toList();
       }
 
-      // Orders: Non-destructive merge
+      // 6. Orders: Non-destructive merge
       final orderJson = prefs.getString(_ordersKey);
       if (orderJson != null && orderJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(orderJson);
@@ -246,7 +257,7 @@ class AppDataService extends ChangeNotifier {
         _orders = mergedOrders.values.toList();
       }
 
-      // Notifications: Non-destructive merge
+      // 7. Notifications: Non-destructive merge
       final notifJson = prefs.getString(_notificationsKey);
       if (notifJson != null && notifJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(notifJson);
@@ -263,12 +274,12 @@ class AppDataService extends ChangeNotifier {
 
       _whatsAppNumber = newWhatsApp;
 
-      // Sauvegarde explicite pour persistance maximale
-      await _savePublications();
-      await _saveOffers();
-      await _saveSubscribers();
+      // Sauvegarde explicite locale
+      await _savePublications(pushToCloud: false);
+      await _saveOffers(pushToCloud: false);
+      await _saveSubscribers(pushToCloud: false);
       await _saveNotifications();
-      await _saveOrders();
+      await _saveOrders(pushToCloud: false);
 
       _lastSyncTime = DateTime.now();
       _isSyncing = false;
@@ -277,6 +288,120 @@ class AppDataService extends ChangeNotifier {
       debugPrint('Error during syncData: $e');
       _lastSyncTime = DateTime.now();
       _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
+  // --- Cloud Synchronization Methods (kvdb.io over HTTPS) ---
+  Future<void> _pushToCloud(String key, String jsonBody) async {
+    try {
+      final url = Uri.parse('$_cloudBaseUrl/$key');
+      await http.post(
+        url,
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+        body: jsonBody,
+      ).timeout(const Duration(seconds: 8));
+    } catch (e) {
+      debugPrint('Cloud sync push error for $key: $e');
+    }
+  }
+
+  Future<void> _pullFromCloud({bool notify = false}) async {
+    bool hasChanges = false;
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Publications
+    try {
+      final pubUrl = Uri.parse('$_cloudBaseUrl/gm_publications_v1');
+      final res = await http.get(pubUrl).timeout(const Duration(seconds: 7));
+      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
+        final List<dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
+        final cloudPubs = decoded.map((item) => Publication.fromJson(item)).toList();
+        final Map<String, Publication> map = {};
+        for (final p in _publications) {
+          map[p.id] = p;
+        }
+        for (final p in cloudPubs) {
+          map[p.id] = p;
+        }
+        final merged = map.values.toList();
+        if (merged.length != _publications.length || jsonEncode(merged) != jsonEncode(_publications)) {
+          _publications = merged;
+          hasChanges = true;
+          await prefs.setString(_publicationsKey, jsonEncode(_publications.map((p) => p.toJson()).toList()));
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud pull publications error: $e');
+    }
+
+    // 2. Offers
+    try {
+      final offUrl = Uri.parse('$_cloudBaseUrl/gm_offers_v1');
+      final res = await http.get(offUrl).timeout(const Duration(seconds: 7));
+      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
+        final List<dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
+        final cloudOffers = decoded.map((item) => Offer.fromJson(item)).toList();
+        final Map<String, Offer> map = {};
+        for (final o in _offers) {
+          map[o.id] = o;
+        }
+        for (final o in cloudOffers) {
+          map[o.id] = o;
+        }
+        final merged = map.values.toList();
+        if (merged.length != _offers.length || jsonEncode(merged) != jsonEncode(_offers)) {
+          _offers = merged;
+          hasChanges = true;
+          await prefs.setString(_offersKey, jsonEncode(_offers.map((o) => o.toJson()).toList()));
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud pull offers error: $e');
+    }
+
+    // 3. Orders
+    try {
+      final ordUrl = Uri.parse('$_cloudBaseUrl/gm_orders_v1');
+      final res = await http.get(ordUrl).timeout(const Duration(seconds: 7));
+      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
+        final List<dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
+        final cloudOrders = decoded.map((item) => OrderItem.fromJson(item)).toList();
+        final Map<String, OrderItem> map = {};
+        for (final o in _orders) {
+          map[o.id] = o;
+        }
+        for (final o in cloudOrders) {
+          map[o.id] = o;
+        }
+        final merged = map.values.toList();
+        if (merged.length != _orders.length) {
+          _orders = merged;
+          hasChanges = true;
+          await prefs.setString(_ordersKey, jsonEncode(_orders.map((o) => o.toJson()).toList()));
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud pull orders error: $e');
+    }
+
+    // 4. WhatsApp
+    try {
+      final whatsUrl = Uri.parse('$_cloudBaseUrl/gm_whatsapp_v1');
+      final res = await http.get(whatsUrl).timeout(const Duration(seconds: 5));
+      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
+        final cloudWhatsApp = res.body.trim();
+        if (cloudWhatsApp != _whatsAppNumber) {
+          _whatsAppNumber = cloudWhatsApp;
+          hasChanges = true;
+          await prefs.setString(_whatsAppKey, _whatsAppNumber);
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud pull whatsapp error: $e');
+    }
+
+    if (hasChanges && notify) {
       notifyListeners();
     }
   }
@@ -452,11 +577,14 @@ class AppDataService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _saveSubscribers() async {
+  Future<void> _saveSubscribers({bool pushToCloud = true}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final encoded = jsonEncode(_subscribers.map((s) => s.toJson()).toList());
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_subscribersKey, encoded);
+      if (pushToCloud) {
+        unawaited(_pushToCloud('gm_subscribers_v1', encoded));
+      }
     } catch (e) {
       debugPrint('Error saving subscribers: $e');
     }
@@ -536,11 +664,14 @@ class AppDataService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _saveOrders() async {
+  Future<void> _saveOrders({bool pushToCloud = true}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final encoded = jsonEncode(_orders.map((o) => o.toJson()).toList());
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_ordersKey, encoded);
+      if (pushToCloud) {
+        unawaited(_pushToCloud('gm_orders_v1', encoded));
+      }
     } catch (e) {
       debugPrint('Error saving orders: $e');
     }
@@ -584,6 +715,7 @@ class AppDataService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_whatsKey, _whatsAppNumber);
+      unawaited(_pushToCloud('gm_whatsapp_v1', _whatsAppNumber));
     } catch (e) {
       debugPrint('Error saving whatsapp: $e');
     }
@@ -602,21 +734,27 @@ class AppDataService extends ChangeNotifier {
   }
 
   // --- Persistence helpers ---
-  Future<void> _savePublications() async {
+  Future<void> _savePublications({bool pushToCloud = true}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final encoded = jsonEncode(_publications.map((p) => p.toJson()).toList());
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_publicationsKey, encoded);
+      if (pushToCloud) {
+        unawaited(_pushToCloud('gm_publications_v1', encoded));
+      }
     } catch (e) {
       debugPrint('Error saving publications: $e');
     }
   }
 
-  Future<void> _saveOffers() async {
+  Future<void> _saveOffers({bool pushToCloud = true}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final encoded = jsonEncode(_offers.map((o) => o.toJson()).toList());
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_offersKey, encoded);
+      if (pushToCloud) {
+        unawaited(_pushToCloud('gm_offers_v1', encoded));
+      }
     } catch (e) {
       debugPrint('Error saving offers: $e');
     }
