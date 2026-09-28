@@ -135,6 +135,248 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
     );
   }
 
+  void _openExportPublicationsDialog() {
+    final jsonStr = AppDataService().exportPublicationsToJson();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.cloud_download_rounded, color: AppTheme.accentBlue),
+            SizedBox(width: 8),
+            Text('Exporter le Catalogue (JSON)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: SizedBox(
+          width: 550,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Ce code JSON contient toutes vos publications et publicités. Vous pouvez le copier pour le transférer ou l\'importer sur un autre appareil :',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 220,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF071A2E),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: SingleChildScrollView(
+                  child: SelectableText(
+                    jsonStr,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: Color(0xFF59D6B6)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: jsonStr));
+              Navigator.of(context).pop();
+              _showToast('✓ Code du catalogue copié dans le presse-papier !');
+            },
+            icon: const Icon(Icons.copy_rounded, size: 16),
+            label: const Text('Copier le JSON'),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.accentCyan, foregroundColor: AppTheme.primaryNavy),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openImportPublicationsDialog() {
+    final controller = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.cloud_upload_rounded, color: AppTheme.accentCyan),
+            SizedBox(width: 8),
+            Text('Importer des Publications (JSON)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: SizedBox(
+          width: 550,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Collez ici le code JSON exporté depuis votre ordinateur pour charger toutes les publications sur ce téléphone / appareil :',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 8,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                decoration: InputDecoration(
+                  hintText: '[ { "id": "pub_1", "title": "...", ... } ]',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              final count = await AppDataService().importPublicationsFromJson(text);
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                _showToast('✓ $count publications importées et synchronisées !');
+              }
+            },
+            icon: const Icon(Icons.file_download_done_rounded, size: 16),
+            label: const Text('Importer & Activer'),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.accentBlue),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openExportOffersDialog() {
+    final jsonStr = AppDataService().exportOffersToJson();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.cloud_download_rounded, color: AppTheme.accentBlue),
+            SizedBox(width: 8),
+            Text('Exporter les Offres (JSON)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: SizedBox(
+          width: 550,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Ce code JSON contient toutes vos offres et opportunités :',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 220,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF071A2E),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: SingleChildScrollView(
+                  child: SelectableText(
+                    jsonStr,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 11, color: Color(0xFF59D6B6)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: jsonStr));
+              Navigator.of(context).pop();
+              _showToast('✓ Code des offres copié !');
+            },
+            icon: const Icon(Icons.copy_rounded, size: 16),
+            label: const Text('Copier'),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.accentCyan, foregroundColor: AppTheme.primaryNavy),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openImportOffersDialog() {
+    final controller = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.cloud_upload_rounded, color: AppTheme.accentCyan),
+            SizedBox(width: 8),
+            Text('Importer des Offres (JSON)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: SizedBox(
+          width: 550,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Collez ici le code JSON des offres à importer :',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 8,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                decoration: InputDecoration(
+                  hintText: '[ { "id": "offer_1", "title": "...", ... } ]',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          FilledButton.icon(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              final count = await AppDataService().importOffersFromJson(text);
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                _showToast('✓ $count offres importées avec succès !');
+              }
+            },
+            icon: const Icon(Icons.file_download_done_rounded, size: 16),
+            label: const Text('Importer'),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.accentBlue),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showToast(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -942,7 +1184,25 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                     label: const Text('Publier un article'),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppTheme.accentBlue,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _openExportPublicationsDialog,
+                    icon: const Icon(Icons.cloud_download_rounded, size: 16),
+                    label: const Text('Exporter'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _openImportPublicationsDialog,
+                    icon: const Icon(Icons.cloud_upload_rounded, size: 16),
+                    label: const Text('Importer'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                     ),
                   ),
                 ],
@@ -955,7 +1215,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   children: [
                     const Text('Activité : ', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textSecondary)),
                     const SizedBox(width: 8),
-                    ...['Tous', 'Toutes les activités', 'GM Formation & Emploi', 'GM Parfum', 'GM Texa', 'GM Autosolution', 'GM Fondation'].map(
+                    ...['Tous', 'Toutes les activités', 'GM Formation & Emploi', 'GM Parfum', 'GM Texa', 'GM Autosolution', 'GM Media & Production', 'GM Fondation'].map(
                       (dept) => Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: FilterChip(
@@ -1221,7 +1481,25 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                     label: const Text('Créer une Offre'),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppTheme.accentBlue,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _openExportOffersDialog,
+                    icon: const Icon(Icons.cloud_download_rounded, size: 16),
+                    label: const Text('Exporter'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _openImportOffersDialog,
+                    icon: const Icon(Icons.cloud_upload_rounded, size: 16),
+                    label: const Text('Importer'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                     ),
                   ),
                 ],
@@ -1234,7 +1512,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   children: [
                     const Text('Département : ', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.textSecondary)),
                     const SizedBox(width: 6),
-                    ...['Tous', 'GM Formation & Emploi', 'GM Parfum', 'GM Texa', 'GM Autosolution', 'GM Fondation'].map(
+                    ...['Tous', 'GM Formation & Emploi', 'GM Parfum', 'GM Texa', 'GM Autosolution', 'GM Media & Production', 'GM Fondation'].map(
                       (dept) => Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: FilterChip(

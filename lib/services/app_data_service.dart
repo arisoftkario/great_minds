@@ -428,6 +428,64 @@ class AppDataService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Exporte toutes les publications au format JSON textuel
+  String exportPublicationsToJson() {
+    return const JsonEncoder.withIndent('  ').convert(
+      _publications.map((p) => p.toJson()).toList(),
+    );
+  }
+
+  /// Importe des publications depuis du JSON et les fusionne sans doublons
+  Future<int> importPublicationsFromJson(String jsonString) async {
+    try {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      final List<Publication> imported = decoded.map((item) => Publication.fromJson(item)).toList();
+      final Map<String, Publication> map = {};
+      for (final p in _publications) {
+        map[p.id] = p;
+      }
+      for (final p in imported) {
+        map[p.id] = p;
+      }
+      _publications = map.values.toList();
+      await _savePublications();
+      notifyListeners();
+      return imported.length;
+    } catch (e) {
+      debugPrint('Error importing publications: $e');
+      return 0;
+    }
+  }
+
+  /// Exporte toutes les offres au format JSON textuel
+  String exportOffersToJson() {
+    return const JsonEncoder.withIndent('  ').convert(
+      _offers.map((o) => o.toJson()).toList(),
+    );
+  }
+
+  /// Importe des offres depuis du JSON et les fusionne sans doublons
+  Future<int> importOffersFromJson(String jsonString) async {
+    try {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      final List<Offer> imported = decoded.map((item) => Offer.fromJson(item)).toList();
+      final Map<String, Offer> map = {};
+      for (final o in _offers) {
+        map[o.id] = o;
+      }
+      for (final o in imported) {
+        map[o.id] = o;
+      }
+      _offers = map.values.toList();
+      await _saveOffers();
+      notifyListeners();
+      return imported.length;
+    } catch (e) {
+      debugPrint('Error importing offers: $e');
+      return 0;
+    }
+  }
+
   Future<void> incrementPublicationViews(String id) async {
     final index = _publications.indexWhere((p) => p.id == id);
     if (index != -1) {
