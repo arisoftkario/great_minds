@@ -354,17 +354,17 @@ class _HeroSection extends StatelessWidget {
     ),
     const SizedBox(height: 18),
     const Text(
-      'GM GROUP',
+      'GM GROUPE – Construire l’excellence, Faire grandir le peu',
       style: TextStyle(
         color: Color(0xFF8FD6FF),
-        fontSize: 18,
-        letterSpacing: 4,
+        fontSize: 16,
+        letterSpacing: 1.5,
         fontWeight: FontWeight.w800,
       ),
     ),
     const SizedBox(height: 22),
     SizedBox(
-      width: compact ? double.infinity : 480,
+      width: compact ? double.infinity : 520,
       child: Text(
         LanguageService().t('hero_subtitle'),
         style: const TextStyle(color: Color(0xFFD7E7F7), fontSize: 17, height: 1.6),
@@ -395,6 +395,16 @@ class _HeroSection extends StatelessWidget {
             backgroundColor: const Color(0xFF59D6B6),
             foregroundColor: const Color(0xFF061A2E),
             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+          ),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => onNavigate('about'),
+          icon: const Icon(Icons.account_balance_rounded, size: 18, color: Color(0xFF59D6B6)),
+          label: const Text('🏛️ Histoire & Vision', style: TextStyle(fontWeight: FontWeight.w700)),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF59D6B6),
+            side: const BorderSide(color: Color(0xFF59D6B6), width: 1.5),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           ),
         ),
         OutlinedButton.icon(
@@ -441,7 +451,22 @@ class _Navigation extends StatelessWidget {
             TextButton(onPressed: () => onNavigate('offers'), child: Text(LanguageService().t('nav_offers'), style: const TextStyle(color: Colors.white70))),
             TextButton(onPressed: () => onNavigate('services'), child: Text(LanguageService().t('nav_activities'), style: const TextStyle(color: Colors.white70))),
             TextButton(onPressed: () => onNavigate('univers'), child: Text(LanguageService().t('nav_univers'), style: const TextStyle(color: Colors.white70))),
-            TextButton(onPressed: () => onNavigate('about'), child: Text(LanguageService().t('nav_about'), style: const TextStyle(color: Colors.white70))),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: OutlinedButton.icon(
+                onPressed: () => onNavigate('about'),
+                icon: const Icon(Icons.account_balance_rounded, size: 14, color: Color(0xFF59D6B6)),
+                label: Text(
+                  LanguageService().t('nav_about'),
+                  style: const TextStyle(color: Color(0xFF59D6B6), fontWeight: FontWeight.w800, fontSize: 13),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF59D6B6), width: 1.2),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
+            ),
             const SizedBox(width: 8),
           ],
           // Language Switcher Dropdown (Reactive)
@@ -2701,9 +2726,11 @@ class _MobileDrawer extends StatelessWidget {
                     },
                   ),
                   _drawerItem(
-                    icon: Icons.info_outline_rounded,
-                    title: LanguageService().t('nav_about'),
+                    icon: Icons.account_balance_rounded,
+                    title: '🏛️ ${LanguageService().t('nav_about')}',
                     subtitle: LanguageService().t('drawer_about_subtitle'),
+                    badge: 'Présentation',
+                    isAccent: true,
                     onTap: () {
                       Navigator.of(context).pop();
                       onNavigate('about');

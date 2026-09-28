@@ -7,7 +7,7 @@ class AppTranslations {
       'nav_offers': 'Offres & Formations',
       'nav_publications': 'Actualités',
       'nav_univers': 'Univers GM',
-      'nav_about': 'À Propos',
+      'nav_about': 'Historique & Vision',
       'nav_method': 'Méthodologie',
       'nav_contact': 'Contact',
       'nav_admin': 'Espace Admin',
@@ -20,7 +20,7 @@ class AppTranslations {
       'drawer_offers_subtitle': 'Emplois, bourses & stages',
       'drawer_services_subtitle': 'Conseil, Formation & Projets',
       'drawer_univers_subtitle': 'Nos départements et filiales',
-      'drawer_about_subtitle': 'Notre mission & équipe',
+      'drawer_about_subtitle': 'Présentation institutionnelle & Histoire GM Groupe',
       'drawer_method_subtitle': 'Notre démarche étape par étape',
 
       // Hero
