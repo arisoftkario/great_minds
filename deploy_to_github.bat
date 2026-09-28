@@ -32,6 +32,8 @@ if exist ".git" (
     rmdir /s /q ".git"
 )
 git init -b gh-pages
+git config user.email "arisoftkario@users.noreply.github.com"
+git config user.name "arisoftkario"
 git add .
 git commit -m "Deploy site web to https://arisoftkario.github.io/great_minds/"
 git remote add origin %REMOTE_URL%
