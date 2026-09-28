@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://arisoftkario.github.io/great_minds/sitemap.xml
