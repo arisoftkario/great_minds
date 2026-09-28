@@ -15,21 +15,28 @@ echo Aucun port libre entre 8080 et 8090.
 pause
 exit /b 1
 
-:start_site
+echo Lancement du serveur Flutter Web sur le port %PORT%...
+echo Veuillez patienter pendant la compilation du projet (cela peut prendre 1 a 2 minutes)...
 start "GREAT MINDS GROUP - Serveur local" /min cmd /c "flutter run -d web-server --web-hostname localhost --web-port %PORT%"
 set /a ATTEMPTS=0
 
 :wait_for_site
-timeout /t 1 /nobreak >nul
+timeout /t 2 /nobreak >nul
 netstat -ano | findstr /c:":%PORT% " | findstr /i "LISTENING" >nul
 if not errorlevel 1 (
+  echo Serveur pret ! Ouverture du navigateur sur http://localhost:%PORT%...
+  timeout /t 1 /nobreak >nul
   start "" "http://localhost:%PORT%"
   exit /b 0
 )
 
 set /a ATTEMPTS+=1
-if !ATTEMPTS! LSS 30 goto wait_for_site
+set /a SECONDS_PASSED=!ATTEMPTS!*2
+<nul set /p =.
+if !ATTEMPTS! LSS 90 goto wait_for_site
 
-echo Le site n'a pas pu demarrer. Verifiez que Flutter est installe puis reessayez.
+echo.
+echo Le delai d'attente est depasse (180s).
+echo Si le serveur est encore en cours de compilation, le site sera bientot accessible sur http://localhost:%PORT%
 pause
 exit /b 1
