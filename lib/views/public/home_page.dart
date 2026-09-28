@@ -1595,11 +1595,12 @@ class _DepartmentPage extends StatelessWidget {
                     final dept = p.department.toLowerCase();
                     final actId = activity.id.toLowerCase();
                     if (actId == 'parfum') return dept.contains('parfum');
-                    if (actId == 'texa') return dept.contains('texa') || dept.contains('visa') || dept.contains('passeport');
-                    if (actId == 'autosolution') return dept.contains('auto');
-                    if (actId == 'fondation') return dept.contains('fondation');
+                    if (actId == 'texa') return dept.contains('texa') || dept.contains('visa') || dept.contains('passeport') || dept.contains('voyage');
+                    if (actId == 'autosolution') return dept.contains('auto') || dept.contains('solution') || dept.contains('véhicule');
+                    if (actId == 'fondation') return dept.contains('fondation') || dept.contains('social') || dept.contains('solidarité');
                     if (actId == 'emploi') return dept.contains('emploi') || dept.contains('formation');
-                    return dept.contains(actId) || activity.title.toLowerCase().contains(dept);
+                    if (actId == 'media' || actId == 'production') return dept.contains('media') || dept.contains('production') || dept.contains('audiovisuel');
+                    return dept.contains(actId) || activity.title.toLowerCase().contains(dept) || dept.contains('toutes');
                   }).toList();
 
                   if (pubs.isEmpty) return const SizedBox.shrink();
