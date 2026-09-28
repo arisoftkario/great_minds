@@ -34,6 +34,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Parfum',
       'hero_pill_texa': 'GM Texa (Visa & Vols)',
       'hero_pill_auto': 'GM Autosolution',
+      'hero_pill_media': 'GM Media & Production',
       'hero_pill_fondation': 'GM Fondation',
 
       // Vision Card
@@ -183,6 +184,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Perfume',
       'hero_pill_texa': 'GM Texa (Visa & Flights)',
       'hero_pill_auto': 'GM Autosolution',
+      'hero_pill_media': 'GM Media & Production',
       'hero_pill_fondation': 'GM Foundation',
 
       // Vision Card
@@ -331,6 +333,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Malasi',
       'hero_pill_texa': 'GM Texa (Visa & Mpepo)',
       'hero_pill_auto': 'GM Mituka',
+      'hero_pill_media': 'GM Media & Production',
       'hero_pill_fondation': 'GM Fondation',
 
       'vision_title': 'Makanisi & Bipai',
@@ -468,6 +471,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Manukato',
       'hero_pill_texa': 'GM Texa (Visa & Ndege)',
       'hero_pill_auto': 'GM Magari',
+      'hero_pill_media': 'GM Media & Uzalishaji',
       'hero_pill_fondation': 'GM Taasisi',
 
       'vision_title': 'Maono & Matokeo',
@@ -605,6 +609,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Perfumes',
       'hero_pill_texa': 'GM Texa (Visas & Vuelos)',
       'hero_pill_auto': 'GM Autosolución',
+      'hero_pill_media': 'GM Media & Producción',
       'hero_pill_fondation': 'GM Fundación',
 
       'vision_title': 'Visión & Resultados',
@@ -742,6 +747,7 @@ class AppTranslations {
       'hero_pill_parfum': 'جي إم للعطور',
       'hero_pill_texa': 'جي إم تيكسا (تأشيرات وطيران)',
       'hero_pill_auto': 'جي إم لحلول السيارات',
+      'hero_pill_media': 'جي إم ميديا والإنتاج',
       'hero_pill_fondation': 'مؤسسة جي إم الخيرية',
 
       'vision_title': 'الرؤية والنتائج',
@@ -879,6 +885,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Perfumes',
       'hero_pill_texa': 'GM Texa (Vistos & Voos)',
       'hero_pill_auto': 'GM Soluções Automotivas',
+      'hero_pill_media': 'GM Mídia & Produção',
       'hero_pill_fondation': 'GM Fundação',
 
       'vision_title': 'Visão & Resultados',
@@ -1016,6 +1023,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM 香氛',
       'hero_pill_texa': 'GM Texa (签证与机票)',
       'hero_pill_auto': 'GM 汽车解决方案',
+      'hero_pill_media': 'GM 传媒与制作',
       'hero_pill_fondation': 'GM 基金会',
 
       'vision_title': '愿景与成果',
@@ -1153,6 +1161,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM 퍼퓸',
       'hero_pill_texa': 'GM Texa (비자 & 항공권)',
       'hero_pill_auto': 'GM 모빌리티 솔루션',
+      'hero_pill_media': 'GM 미디어 & 프로덕션',
       'hero_pill_fondation': 'GM 재단',
 
       'vision_title': '비전 & 성과',
@@ -1290,6 +1299,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Parfum',
       'hero_pill_texa': 'GM Texa (Visa & Flüge)',
       'hero_pill_auto': 'GM Autosolution',
+      'hero_pill_media': 'GM Medien & Produktion',
       'hero_pill_fondation': 'GM Stiftung',
 
       'vision_title': 'Vision & Ergebnisse',
@@ -1427,6 +1437,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Profumi',
       'hero_pill_texa': 'GM Texa (Visti & Voli)',
       'hero_pill_auto': 'GM Soluzioni Auto',
+      'hero_pill_media': 'GM Media & Produzione',
       'hero_pill_fondation': 'GM Fondazione',
 
       'vision_title': 'Visione & Risultati',
@@ -1564,6 +1575,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Парфюмерия',
       'hero_pill_texa': 'GM Texa (Визы и авиабилеты)',
       'hero_pill_auto': 'GM Авторешения',
+      'hero_pill_media': 'GM Медиа и Производство',
       'hero_pill_fondation': 'Фонд GM',
 
       'vision_title': 'Видение и результаты',
@@ -1701,6 +1713,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM パフューム',
       'hero_pill_texa': 'GM Texa (ビザ＆航空券)',
       'hero_pill_auto': 'GM オートソリューション',
+      'hero_pill_media': 'GM メディア＆プロダクション',
       'hero_pill_fondation': 'GM 財団',
 
       'vision_title': 'ビジョンと成果',
@@ -1838,6 +1851,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM Parfüm',
       'hero_pill_texa': 'GM Texa (Vize & Uçuş)',
       'hero_pill_auto': 'GM Otomotiv Çözümleri',
+      'hero_pill_media': 'GM Medya & Prodüksiyon',
       'hero_pill_fondation': 'GM Vakfı',
 
       'vision_title': 'Vizyon & Sonuçlar',
@@ -1975,6 +1989,7 @@ class AppTranslations {
       'hero_pill_parfum': 'GM परफ्यूम',
       'hero_pill_texa': 'GM Texa (वीज़ा और उड़ानें)',
       'hero_pill_auto': 'GM ऑटो सॉल्यूशंस',
+      'hero_pill_media': 'GM मीडिया और प्रोडक्शन',
       'hero_pill_fondation': 'GM फाउंडेशन',
 
       'vision_title': 'दृष्टिकोण और परिणाम',

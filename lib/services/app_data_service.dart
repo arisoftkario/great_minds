@@ -70,27 +70,37 @@ class AppDataService extends ChangeNotifier {
       // WhatsApp Number
       _whatsAppNumber = prefs.getString(_whatsAppKey) ?? AppConstants.whatsAppNumber;
 
-      // Publications
+      // Publications (Non-destructive merge: keep all stored, add new default system publications)
       final pubJson = prefs.getString(_publicationsKey);
       if (pubJson != null && pubJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(pubJson);
-        _publications = decoded.map((item) => Publication.fromJson(item)).toList();
+        final storedPubs = decoded.map((item) => Publication.fromJson(item)).toList();
+        final storedIds = storedPubs.map((p) => p.id).toSet();
+        final defaultPubs = _getDefaultPublications();
+        final newDefaults = defaultPubs.where((p) => !storedIds.contains(p.id)).toList();
+        _publications = [...storedPubs, ...newDefaults];
+        await _savePublications();
       } else {
         _publications = _getDefaultPublications();
         await _savePublications();
       }
 
-      // Offers
+      // Offers (Non-destructive merge: keep all stored, add new default system offers)
       final offerJson = prefs.getString(_offersKey);
       if (offerJson != null && offerJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(offerJson);
-        _offers = decoded.map((item) => Offer.fromJson(item)).toList();
+        final storedOffers = decoded.map((item) => Offer.fromJson(item)).toList();
+        final storedIds = storedOffers.map((o) => o.id).toSet();
+        final defaultOffers = _getDefaultOffers();
+        final newDefaults = defaultOffers.where((o) => !storedIds.contains(o.id)).toList();
+        _offers = [...storedOffers, ...newDefaults];
+        await _saveOffers();
       } else {
         _offers = _getDefaultOffers();
         await _saveOffers();
       }
 
-      // Subscribers
+      // Subscribers (Preserve all existing subscriptions)
       final subJson = prefs.getString(_subscribersKey);
       if (subJson != null && subJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(subJson);
@@ -99,7 +109,7 @@ class AppDataService extends ChangeNotifier {
         _subscribers = [];
       }
 
-      // Orders
+      // Orders (Preserve all existing client orders)
       final orderJson = prefs.getString(_ordersKey);
       if (orderJson != null && orderJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(orderJson);
@@ -108,7 +118,7 @@ class AppDataService extends ChangeNotifier {
         _orders = [];
       }
 
-      // Notifications
+      // Notifications (Preserve all existing admin notifications)
       final notifJson = prefs.getString(_notificationsKey);
       if (notifJson != null && notifJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(notifJson);
@@ -140,7 +150,7 @@ class AppDataService extends ChangeNotifier {
       _orders = [];
       _isInitialized = true;
       _lastSyncTime = DateTime.now();
-      startAutoSync(); // Lance l'auto-synchronisation automatique toutes les 10 secondes
+      startAutoSync();
       notifyListeners();
     }
   }
@@ -162,6 +172,7 @@ class AppDataService extends ChangeNotifier {
   }
 
   /// Force ou exécute la synchronisation et la sauvegarde globale des données
+  /// sans JAMAIS supprimer les publications ou données existantes.
   Future<void> syncData({bool silent = false}) async {
     if (_isSyncing) return;
     _isSyncing = true;
@@ -175,52 +186,82 @@ class AppDataService extends ChangeNotifier {
       // WhatsApp Number
       final newWhatsApp = prefs.getString(_whatsAppKey) ?? AppConstants.whatsAppNumber;
 
-      // Publications
-      List<Publication> newPublications = _publications;
+      // Publications: Non-destructive merge between in-memory and stored data
       final pubJson = prefs.getString(_publicationsKey);
       if (pubJson != null && pubJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(pubJson);
-        newPublications = decoded.map((item) => Publication.fromJson(item)).toList();
+        final storedPubs = decoded.map((item) => Publication.fromJson(item)).toList();
+        final Map<String, Publication> mergedMap = {};
+        for (final p in storedPubs) {
+          mergedMap[p.id] = p;
+        }
+        for (final p in _publications) {
+          mergedMap[p.id] = p;
+        }
+        _publications = mergedMap.values.toList();
       }
 
-      // Offers
-      List<Offer> newOffers = _offers;
+      // Offers: Non-destructive merge
       final offerJson = prefs.getString(_offersKey);
       if (offerJson != null && offerJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(offerJson);
-        newOffers = decoded.map((item) => Offer.fromJson(item)).toList();
+        final storedOffers = decoded.map((item) => Offer.fromJson(item)).toList();
+        final Map<String, Offer> mergedOffers = {};
+        for (final o in storedOffers) {
+          mergedOffers[o.id] = o;
+        }
+        for (final o in _offers) {
+          mergedOffers[o.id] = o;
+        }
+        _offers = mergedOffers.values.toList();
       }
 
-      // Subscribers
-      List<Subscriber> newSubscribers = _subscribers;
+      // Subscribers: Non-destructive merge
       final subJson = prefs.getString(_subscribersKey);
       if (subJson != null && subJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(subJson);
-        newSubscribers = decoded.map((item) => Subscriber.fromJson(item)).toList();
+        final storedSubs = decoded.map((item) => Subscriber.fromJson(item)).toList();
+        final Map<String, Subscriber> mergedSubs = {};
+        for (final s in storedSubs) {
+          mergedSubs[s.id] = s;
+        }
+        for (final s in _subscribers) {
+          mergedSubs[s.id] = s;
+        }
+        _subscribers = mergedSubs.values.toList();
       }
 
-      // Orders
-      List<OrderItem> newOrders = _orders;
+      // Orders: Non-destructive merge
       final orderJson = prefs.getString(_ordersKey);
       if (orderJson != null && orderJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(orderJson);
-        newOrders = decoded.map((item) => OrderItem.fromJson(item)).toList();
+        final storedOrders = decoded.map((item) => OrderItem.fromJson(item)).toList();
+        final Map<String, OrderItem> mergedOrders = {};
+        for (final o in storedOrders) {
+          mergedOrders[o.id] = o;
+        }
+        for (final o in _orders) {
+          mergedOrders[o.id] = o;
+        }
+        _orders = mergedOrders.values.toList();
       }
 
-      // Notifications
-      List<AdminNotification> newNotifications = _notifications;
+      // Notifications: Non-destructive merge
       final notifJson = prefs.getString(_notificationsKey);
       if (notifJson != null && notifJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(notifJson);
-        newNotifications = decoded.map((item) => AdminNotification.fromJson(item)).toList();
+        final storedNotifs = decoded.map((item) => AdminNotification.fromJson(item)).toList();
+        final Map<String, AdminNotification> mergedNotifs = {};
+        for (final n in storedNotifs) {
+          mergedNotifs[n.id] = n;
+        }
+        for (final n in _notifications) {
+          mergedNotifs[n.id] = n;
+        }
+        _notifications = mergedNotifs.values.toList();
       }
 
       _whatsAppNumber = newWhatsApp;
-      _publications = newPublications;
-      _offers = newOffers;
-      _subscribers = newSubscribers;
-      _notifications = newNotifications;
-      _orders = newOrders;
 
       // Sauvegarde explicite pour persistance maximale
       await _savePublications();
@@ -943,6 +984,62 @@ class AppDataService extends ChangeNotifier {
         isActive: true,
         isUrgent: false,
       ),
+
+      // --- GM MEDIA & PRODUCTION ---
+      Offer(
+        id: 'media_1',
+        title: 'Production Audiovisuelle & Couverture d’Événements 4K',
+        department: 'GM Media & Production',
+        type: 'Service',
+        location: 'Kinshasa / Déplacement possible',
+        salaryOrPrice: 'Sur devis personnalisé',
+        description: 'Réalisation complète de spots publicitaires, documentaires, captation multicaméras en direct et création de contenus vidéo professionnels pour entreprises et particuliers.',
+        requirements: [
+          'Équipe de tournage et matériel 4K / Haute Définition',
+          'Montage, étalonnage et mixage sonore inclus',
+          'Livraison rapide sur support numérique et réseaux sociaux',
+        ],
+        deadline: DateTime.now().add(const Duration(days: 90)),
+        publishedDate: DateTime.now().subtract(const Duration(days: 1)),
+        isActive: true,
+        isUrgent: true,
+      ),
+      Offer(
+        id: 'media_2',
+        title: 'Stratégie de Communication Digitale & Image de Marque 360°',
+        department: 'GM Media & Production',
+        type: 'Service',
+        location: 'Kinshasa / Accompagnement à distance',
+        salaryOrPrice: 'Forfaits mensuels sur mesure',
+        description: 'Gestion de vos réseaux sociaux, création de visuels percutants, rédaction de contenus et déploiement de campagnes publicitaires sponsorisées pour booster votre visibilité.',
+        requirements: [
+          'Audit préalable de votre communication actuelle',
+          'Calendrier éditorial et création de contenu régulier',
+          'Rapports mensuels de performance et d’audience',
+        ],
+        deadline: DateTime.now().add(const Duration(days: 60)),
+        publishedDate: DateTime.now().subtract(const Duration(days: 3)),
+        isActive: true,
+        isUrgent: false,
+      ),
+      Offer(
+        id: 'media_3',
+        title: 'Formation Pratique : Cadrage Vidéo, Montage & Storytelling',
+        department: 'GM Media & Production',
+        type: 'Formation',
+        location: 'Studios GM Media Kinshasa',
+        salaryOrPrice: 'Session intensive certifiante',
+        description: 'Apprenez les bases et techniques avancées de la réalisation vidéo, du maniement caméra, de la prise de son et du montage sur Premiere Pro / DaVinci Resolve.',
+        requirements: [
+          'Accessible aux débutants et créateurs de contenu',
+          'Pratique directe sur matériel professionnel en studio',
+          'Attestation de formation et possibilité de stage interne',
+        ],
+        deadline: DateTime.now().add(const Duration(days: 30)),
+        publishedDate: DateTime.now().subtract(const Duration(days: 4)),
+        isActive: true,
+        isUrgent: false,
+      ),
     ];
   }
 
@@ -1081,6 +1178,7 @@ class AppDataService extends ChangeNotifier {
       id: 'media',
       title: 'GM Media & Production',
       description: 'Communication, création de contenus, production audiovisuelle, promotion de projets et valorisation des talents.',
+      imageAsset: 'assets/gm_media.jpg',
       fallbackIcon: Icons.movie_filter_rounded,
       actionLabel: 'Nos Réalisations',
       requestMessage: 'collaborer avec GM Media & Production pour un projet audiovisuel ou de communication',

@@ -379,6 +379,7 @@ class _HeroSection extends StatelessWidget {
         _Pill(label: LanguageService().t('hero_pill_parfum')),
         _Pill(label: LanguageService().t('hero_pill_texa')),
         _Pill(label: LanguageService().t('hero_pill_auto')),
+        _Pill(label: LanguageService().t('hero_pill_media')),
         _Pill(label: LanguageService().t('hero_pill_fondation')),
       ],
     ),

@@ -38,6 +38,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
     'GM Parfum',
     'GM Texa',
     'GM Autosolution',
+    'GM Media & Production',
     'GM Fondation',
   ];
 

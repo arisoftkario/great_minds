@@ -68,6 +68,7 @@ class _PublicationsSectionState extends State<PublicationsSection> {
           'GM Parfum',
           'GM Texa',
           'GM Autosolution',
+          'GM Media & Production',
           'GM Fondation',
         ];
 
