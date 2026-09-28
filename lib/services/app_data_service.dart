@@ -1032,27 +1032,52 @@ class AppDataService extends ChangeNotifier {
     ),
     const BusinessActivity(
       id: 'fondation',
-      title: 'GM Fondation',
-      description: 'Des opérations d’accompagnement, de formation et d’insertion pour les jeunes.',
+      title: 'GM Foundation Company LTD',
+      description: 'Initiatives sociales, humanitaires, culturelles, éducatives et soutien aux personnes vulnérables et à la jeunesse.',
       imageAsset: 'assets/Wh.jpeg',
       fallbackIcon: Icons.volunteer_activism_rounded,
-      actionLabel: 'Nous rejoindre',
-      requestMessage: 'en savoir plus sur les opérations de GM Fondation',
+      actionLabel: 'Découvrir nos actions',
+      requestMessage: 'en savoir plus sur les initiatives de GM Foundation Company LTD',
       offerings: [
         DepartmentOffering(
           icon: Icons.volunteer_activism_rounded,
-          title: 'Orientation emploi',
-          description: 'Des repères pratiques pour avancer vers l’emploi.',
+          title: 'Solidarité & Communauté',
+          description: 'Soutien direct aux personnes vulnérables et actions de solidarité citoyenne.',
         ),
         DepartmentOffering(
           icon: Icons.school_rounded,
-          title: 'Bourses & Formations',
-          description: 'Des parcours 100% pris en charge pour développer des compétences utiles.',
+          title: 'Bourses & Éducation',
+          description: 'Des parcours de formation pris en charge pour développer des compétences utiles.',
         ),
         DepartmentOffering(
           icon: Icons.groups_rounded,
-          title: 'Programmes jeunesse',
-          description: 'Des actions concrètes favorisant l’autonomie et l’insertion.',
+          title: 'Programmes Jeunesse',
+          description: 'Des actions concrètes favorisant l’autonomie, la culture et l’insertion.',
+        ),
+      ],
+    ),
+    const BusinessActivity(
+      id: 'media',
+      title: 'GM Media & Production',
+      description: 'Communication, création de contenus, production audiovisuelle, promotion de projets et valorisation des talents.',
+      fallbackIcon: Icons.movie_filter_rounded,
+      actionLabel: 'Nos Réalisations',
+      requestMessage: 'collaborer avec GM Media & Production pour un projet audiovisuel ou de communication',
+      offerings: [
+        DepartmentOffering(
+          icon: Icons.videocam_rounded,
+          title: 'Production Audiovisuelle',
+          description: 'Spots publicitaires, reportages institutionnels, podcasts et captation événementielle.',
+        ),
+        DepartmentOffering(
+          icon: Icons.campaign_rounded,
+          title: 'Stratégie de Communication',
+          description: 'Création de contenus impactants, image de marque et campagnes digitales.',
+        ),
+        DepartmentOffering(
+          icon: Icons.star_rounded,
+          title: 'Valorisation des Talents',
+          description: 'Mise en lumière des porteurs de projets, artistes, créateurs et jeunes innovateurs.',
         ),
       ],
     ),
@@ -1074,11 +1099,14 @@ class AppDataService extends ChangeNotifier {
     if (name.contains('auto') || name.contains('véhicule') || name.contains('vehicule') || name.contains('pièce') || name.contains('piece')) {
       return activities.firstWhere((a) => a.id == 'autosolution');
     }
+    if (name.contains('media') || name.contains('médias') || name.contains('production') || name.contains('audiovisuel') || name.contains('contenu')) {
+      return activities.firstWhere((a) => a.id == 'media');
+    }
+    if (name.contains('fondation') || name.contains('foundation') || name.contains('social') || name.contains('humanitaire')) {
+      return activities.firstWhere((a) => a.id == 'fondation');
+    }
     if (name.contains('emploi') || name.contains('formation') || name.contains('recrutement') || name.contains('stage') || name.contains('carrière') || name.contains('carriere')) {
       return activities.firstWhere((a) => a.id == 'emploi');
-    }
-    if (name.contains('fondation') || name.contains('jeune') || name.contains('social') || name.contains('bourse')) {
-      return activities.firstWhere((a) => a.id == 'fondation');
     }
     return activities.first;
   }

@@ -18,6 +18,7 @@ import 'widgets/publication_detail_dialog.dart';
 import 'widgets/publications_section.dart';
 import 'widgets/subscription_section.dart';
 import 'widgets/order_checkout_dialog.dart';
+import 'widgets/institutional_history_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -212,8 +213,14 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                // 7. About
-                Container(key: _aboutKey, child: const _AboutSection()),
+                // 7. About & Institutional History
+                Container(
+                  key: _aboutKey,
+                  child: InstitutionalHistorySection(
+                    onOpenDepartment: _openDepartmentByName,
+                    onContact: () => _openWhatsApp(),
+                  ),
+                ),
 
                 // 8. Process / Method
                 Container(key: _methodKey, child: const _ProcessSection()),
@@ -2224,116 +2231,6 @@ class _DepartmentOfferingCard extends StatelessWidget {
           Text(offering.description, style: const TextStyle(color: Color(0xFF536D84), height: 1.5)),
         ],
       ),
-    );
-  }
-}
-
-// ==========================================
-// ABOUT SECTION
-// ==========================================
-class _AboutSection extends StatelessWidget {
-  const _AboutSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0C1F35),
-      padding: const EdgeInsets.fromLTRB(24, 90, 24, 90),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 760;
-              final textBlock = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    LanguageService().t('about_badge'),
-                    style: const TextStyle(color: Color(0xFF59D6B6), fontSize: 12, letterSpacing: 2, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    LanguageService().t('about_title'),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: compact ? 36 : 46,
-                      fontWeight: FontWeight.w800,
-                      height: 1.08,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    LanguageService().t('about_subtitle'),
-                    style: const TextStyle(color: Color(0xFFCBDCEB), height: 1.7, fontSize: 17),
-                  ),
-                  const SizedBox(height: 24),
-                  const _AboutList(),
-                ],
-              );
-
-              if (compact) {
-                return textBlock;
-              }
-
-              return Row(
-                children: [
-                  Expanded(child: textBlock),
-                  const SizedBox(width: 28),
-                  Container(
-                    width: 320,
-                    height: 360,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF59D6B6), Color(0xFF1B7AE6)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.groups_2_rounded, size: 100, color: Color(0xFF061A2E)),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AboutList extends StatelessWidget {
-  const _AboutList();
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      LanguageService().t('about_point_1'),
-      LanguageService().t('about_point_2'),
-      LanguageService().t('about_point_3'),
-    ];
-
-    return Column(
-      children: items
-          .map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.check_circle_rounded, color: Color(0xFF59D6B6), size: 20),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(item, style: const TextStyle(color: Color(0xFFEAF7FF), height: 1.6)),
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
     );
   }
 }
