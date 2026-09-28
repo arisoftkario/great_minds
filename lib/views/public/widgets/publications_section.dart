@@ -50,8 +50,13 @@ class _PublicationsSectionState extends State<PublicationsSection> {
       listenable: Listenable.merge([dataService, langService]),
       builder: (context, _) {
         final allPubs = dataService.publishedPublications;
+        final hasAnyVideos = allPubs.any((p) => p.hasVideo);
         final filteredPubs = allPubs.where((p) {
-          final matchCat = _selectedCategory == 'Tous' || p.category == _selectedCategory;
+          final matchCat = _selectedCategory == 'Tous'
+              ? true
+              : (_selectedCategory == '🎥 Vidéos'
+                  ? p.hasVideo
+                  : p.category == _selectedCategory);
           final matchDept = _selectedDepartment == 'Tous' || p.department == _selectedDepartment;
           return matchCat && matchDept;
         }).toList();
@@ -66,7 +71,11 @@ class _PublicationsSectionState extends State<PublicationsSection> {
           'GM Fondation',
         ];
 
-        final categories = ['Tous', ...allPubs.map((p) => p.category).toSet()];
+        final categories = [
+          'Tous',
+          if (hasAnyVideos) '🎥 Vidéos',
+          ...allPubs.map((p) => p.category).toSet().where((c) => c != '🎥 Vidéos'),
+        ];
 
         return Container(
           color: const Color(0xFFF9FBFF),
@@ -331,6 +340,44 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                             Text(
                               '${pub.allImages.length}',
                               style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // Badge Vidéo
+                  if (pub.hasVideo)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: (pub.youtubeVideoId != null
+                                  ? const Color(0xFFFF0000)
+                                  : AppTheme.accentCyan)
+                              .withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2))
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              pub.youtubeVideoId != null ? Icons.play_circle_fill_rounded : Icons.videocam_rounded,
+                              size: 13,
+                              color: pub.youtubeVideoId != null ? Colors.white : const Color(0xFF071424),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Vidéo',
+                              style: TextStyle(
+                                color: pub.youtubeVideoId != null ? Colors.white : const Color(0xFF071424),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ],
                         ),

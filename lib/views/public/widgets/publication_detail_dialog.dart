@@ -6,6 +6,7 @@ import '../../../models/publication_model.dart';
 import '../../../services/app_data_service.dart';
 import '../../../services/language_service.dart';
 import '../../common/app_image_viewer.dart';
+import '../../common/app_video_player.dart';
 import 'order_checkout_dialog.dart';
 import 'share_dialog.dart';
 
@@ -293,6 +294,70 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                             ),
                           ],
                           const SizedBox(height: 24),
+                        ],
+
+                        // ==========================================
+                        // SECTION VIDÉO DE PRÉSENTATION
+                        // ==========================================
+                        if (publication.hasVideo) ...[
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: (publication.youtubeVideoId != null
+                                                ? const Color(0xFFFF0000)
+                                                : AppTheme.accentBlue)
+                                            .withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        publication.youtubeVideoId != null
+                                            ? Icons.play_circle_fill_rounded
+                                            : Icons.videocam_rounded,
+                                        color: publication.youtubeVideoId != null
+                                            ? const Color(0xFFFF0000)
+                                            : AppTheme.accentBlue,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Vidéo de présentation',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppTheme.textPrimary,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Regardez la démonstration ou l\'explication vidéo',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                AppVideoPlayer(
+                                  publication: publication,
+                                  height: 320,
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
 
                         // Interactive Department Discovery Banner

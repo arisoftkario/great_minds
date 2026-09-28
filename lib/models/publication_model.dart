@@ -40,6 +40,7 @@ class Publication {
   final String? price; // Ex: '25 000 FCFA', '50 USD', '15 000 FCFA', 'Sur devis'
   final String? imageUrl;
   final List<String> images;
+  final String? videoUrl; // Lien vidéo (YouTube, Vimeo, MP4, etc.)
   final DateTime publishedDate;
   final bool isPublished; // true = Publié, false = Brouillon
   final List<String> tags;
@@ -60,6 +61,7 @@ class Publication {
     this.price,
     this.imageUrl,
     this.images = const [],
+    this.videoUrl,
     required this.publishedDate,
     this.isPublished = true,
     this.tags = const [],
@@ -75,6 +77,39 @@ class Publication {
 
   /// Indique si la publication a un prix défini
   bool get hasPrice => price != null && price!.trim().isNotEmpty;
+
+  /// Indique si la publication contient une vidéo
+  bool get hasVideo => videoUrl != null && videoUrl!.trim().isNotEmpty;
+
+  /// Extrait l'ID de la vidéo YouTube si l'URL correspond à YouTube
+  String? get youtubeVideoId {
+    if (!hasVideo) return null;
+    final url = videoUrl!.trim();
+
+    // Regex pour détecter les formats YouTube courants:
+    // https://www.youtube.com/watch?v=VIDEO_ID
+    // https://youtu.be/VIDEO_ID
+    // https://www.youtube.com/embed/VIDEO_ID
+    // https://www.youtube.com/shorts/VIDEO_ID
+    final regExp = RegExp(
+      r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})',
+      caseSensitive: false,
+    );
+    final match = regExp.firstMatch(url);
+    if (match != null && match.groupCount >= 1) {
+      return match.group(1);
+    }
+    return null;
+  }
+
+  /// Retourne la miniature de la vidéo YouTube si disponible
+  String? get videoThumbnail {
+    final yId = youtubeVideoId;
+    if (yId != null) {
+      return 'https://img.youtube.com/vi/$yId/hqdefault.jpg';
+    }
+    return primaryImage;
+  }
 
   /// Retourne la liste complète des images (inclut imageUrl si non vide)
   List<String> get allImages {
@@ -101,6 +136,7 @@ class Publication {
     String? price,
     String? imageUrl,
     List<String>? images,
+    String? videoUrl,
     DateTime? publishedDate,
     bool? isPublished,
     List<String>? tags,
@@ -121,6 +157,7 @@ class Publication {
       price: price ?? this.price,
       imageUrl: imageUrl ?? this.imageUrl,
       images: images ?? this.images,
+      videoUrl: videoUrl ?? this.videoUrl,
       publishedDate: publishedDate ?? this.publishedDate,
       isPublished: isPublished ?? this.isPublished,
       tags: tags ?? this.tags,
@@ -144,6 +181,7 @@ class Publication {
       'price': price,
       'imageUrl': primaryImage,
       'images': images,
+      'videoUrl': videoUrl,
       'publishedDate': publishedDate.toIso8601String(),
       'isPublished': isPublished,
       'tags': tags,
@@ -183,6 +221,7 @@ class Publication {
       price: json['price'] as String?,
       imageUrl: mainImage ?? (parsedImages.isNotEmpty ? parsedImages.first : null),
       images: parsedImages,
+      videoUrl: json['videoUrl'] as String?,
       publishedDate: json['publishedDate'] != null
           ? DateTime.tryParse(json['publishedDate'] as String) ?? DateTime.now()
           : DateTime.now(),

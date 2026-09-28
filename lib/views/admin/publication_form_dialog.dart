@@ -23,6 +23,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
   late TextEditingController _authorController;
   late TextEditingController _tagsController;
   late TextEditingController _priceController;
+  late TextEditingController _videoUrlController;
   late TextEditingController _urlInputController;
 
   String _selectedCategory = 'Actualité';
@@ -59,6 +60,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
     _authorController = TextEditingController(text: p?.author ?? 'Direction GM GROUP');
     _tagsController = TextEditingController(text: p?.tags.join(', ') ?? 'Formation, Emploi');
     _priceController = TextEditingController(text: p?.price ?? '');
+    _videoUrlController = TextEditingController(text: p?.videoUrl ?? '');
     _urlInputController = TextEditingController();
     _selectedCategory = p?.category ?? 'Actualité';
     _selectedDepartment = p?.department ?? 'Toutes les activités';
@@ -74,6 +76,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
     _authorController.dispose();
     _tagsController.dispose();
     _priceController.dispose();
+    _videoUrlController.dispose();
     _urlInputController.dispose();
     super.dispose();
   }
@@ -161,6 +164,7 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
         author: _authorController.text.trim(),
         imageUrl: _images.isNotEmpty ? _images.first : null,
         images: _images,
+        videoUrl: _videoUrlController.text.trim().isNotEmpty ? _videoUrlController.text.trim() : null,
         publishedDate: widget.publication?.publishedDate ?? DateTime.now(),
         isPublished: _isPublished,
         tags: tags,
@@ -579,6 +583,88 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
                         controller: _tagsController,
                         decoration: const InputDecoration(
                           hintText: 'Emploi, Jeunesse, Innovation',
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+
+                      // ==========================================
+                      // SECTION VIDÉO (YOUTUBE / VIMEO / MP4)
+                      // ==========================================
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FBFE),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFD4E3F3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF0000).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFFF0000), size: 20),
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Vidéo de la publication',
+                                  style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary, fontSize: 14),
+                                ),
+                                const SizedBox(width: 6),
+                                const Text('(Optionnel)', style: TextStyle(fontSize: 12, color: Colors.black45)),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _videoUrlController,
+                              onChanged: (_) => setState(() {}),
+                              decoration: InputDecoration(
+                                hintText: 'Ex: https://www.youtube.com/watch?v=... ou https://youtu.be/...',
+                                prefixIcon: const Icon(Icons.videocam_rounded, color: Color(0xFFFF0000), size: 20),
+                                suffixIcon: _videoUrlController.text.trim().isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear_rounded, size: 18),
+                                        onPressed: () {
+                                          _videoUrlController.clear();
+                                          setState(() {});
+                                        },
+                                      )
+                                    : null,
+                                helperText: 'Accepte les liens YouTube, Vimeo, MP4 ou liens vidéos directs',
+                                helperStyle: const TextStyle(fontSize: 11, color: Colors.black54),
+                              ),
+                            ),
+                            if (_videoUrlController.text.trim().isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFECFDF5),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Vidéo configurée : ${_videoUrlController.text.trim()}',
+                                        style: const TextStyle(color: Color(0xFF047857), fontSize: 12, fontWeight: FontWeight.w600),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],
