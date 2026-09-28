@@ -8,6 +8,7 @@ import '../../../services/language_service.dart';
 import '../../common/app_image_viewer.dart';
 import 'publication_detail_dialog.dart';
 import 'order_checkout_dialog.dart';
+import 'share_dialog.dart';
 
 class PublicationsSection extends StatefulWidget {
   final void Function(String department)? onOpenDepartment;
@@ -462,12 +463,14 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                 const Divider(color: AppTheme.borderSubtle, height: 1),
                 const SizedBox(height: 12),
 
-                // Interactive Likes, Followers & Comments Row
+                // Interactive Likes, Followers, Comments & Shares Row
                 Row(
                   children: [
                     _buildLikeButton(pub),
                     const SizedBox(width: 6),
                     _buildCommentButton(pub),
+                    const SizedBox(width: 6),
+                    _buildShareButton(pub),
                     const SizedBox(width: 6),
                     _buildFollowButton(pub),
                   ],
@@ -610,6 +613,43 @@ class _PublicationsSectionState extends State<PublicationsSection> {
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1B7AE6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareButton(Publication pub) {
+    return Tooltip(
+      message: 'Partager ce produit / publication (${pub.sharesCount} partages)',
+      child: InkWell(
+        onTap: () => SharePublicationDialog.show(context, pub),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.transparent),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.share_rounded,
+                size: 15,
+                color: Color(0xFF10B981),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                '${pub.sharesCount}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF047857),
                 ),
               ),
             ],

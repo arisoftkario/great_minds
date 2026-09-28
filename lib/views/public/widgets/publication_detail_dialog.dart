@@ -7,6 +7,7 @@ import '../../../services/app_data_service.dart';
 import '../../../services/language_service.dart';
 import '../../common/app_image_viewer.dart';
 import 'order_checkout_dialog.dart';
+import 'share_dialog.dart';
 
 class PublicationDetailDialog extends StatefulWidget {
   final Publication publication;
@@ -472,6 +473,14 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                const Icon(Icons.share_rounded, size: 15, color: Color(0xFF10B981)),
+                                const SizedBox(width: 6),
+                                Text('${publication.sharesCount} partages', style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                                 const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Color(0xFF1B7AE6)),
                                 const SizedBox(width: 6),
                                 Text('${publication.comments.length} commentaire${publication.comments.length > 1 ? "s" : ""}', style: const TextStyle(fontSize: 13, color: Color(0xFF1B7AE6), fontWeight: FontWeight.w700)),
@@ -533,7 +542,7 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                           const SizedBox(height: 28),
                         ],
 
-                        // Interactive Engagement Bar (Like + Follow inside Dialog)
+                        // Interactive Engagement Bar (Like + Follow + Share inside Dialog)
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -541,7 +550,9 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppTheme.borderSubtle),
                           ),
-                          child: Row(
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
                             children: [
                               // Like Action Button
                               ElevatedButton.icon(
@@ -570,7 +581,32 @@ class _PublicationDetailDialogState extends State<PublicationDetailDialog> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+
+                              // Share Action Button
+                              ElevatedButton.icon(
+                                onPressed: () => SharePublicationDialog.show(context, publication),
+                                icon: const Icon(
+                                  Icons.share_rounded,
+                                  size: 18,
+                                  color: Color(0xFF047857),
+                                ),
+                                label: Text(
+                                  'Partager (${publication.sharesCount})',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF047857),
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFECFDF5),
+                                  elevation: 0,
+                                  side: const BorderSide(
+                                    color: Color(0xFF10B981),
+                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                              ),
 
                               // Follow Action Button
                               ElevatedButton.icon(

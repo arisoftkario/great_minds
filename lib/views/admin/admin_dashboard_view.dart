@@ -1148,6 +1148,14 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   Text('${p.followersCount} abonnés', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w600)),
                 ],
               ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.share_rounded, size: 15, color: Color(0xFF10B981)),
+                  const SizedBox(width: 6),
+                  Text('${p.sharesCount} partages', style: const TextStyle(fontSize: 12, color: Color(0xFF047857), fontWeight: FontWeight.w700)),
+                ],
+              ),
               if (p.tags.isNotEmpty)
                 Wrap(
                   spacing: 6,

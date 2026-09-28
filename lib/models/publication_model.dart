@@ -46,6 +46,7 @@ class Publication {
   final int viewsCount;
   final int likesCount;
   final int followersCount;
+  final int sharesCount;
   final List<PublicationComment> comments;
 
   const Publication({
@@ -65,6 +66,7 @@ class Publication {
     this.viewsCount = 0,
     this.likesCount = 0,
     this.followersCount = 0,
+    this.sharesCount = 0,
     this.comments = const [],
   });
 
@@ -105,6 +107,7 @@ class Publication {
     int? viewsCount,
     int? likesCount,
     int? followersCount,
+    int? sharesCount,
     List<PublicationComment>? comments,
   }) {
     return Publication(
@@ -124,6 +127,7 @@ class Publication {
       viewsCount: viewsCount ?? this.viewsCount,
       likesCount: likesCount ?? this.likesCount,
       followersCount: followersCount ?? this.followersCount,
+      sharesCount: sharesCount ?? this.sharesCount,
       comments: comments ?? this.comments,
     );
   }
@@ -146,6 +150,7 @@ class Publication {
       'viewsCount': viewsCount,
       'likesCount': likesCount,
       'followersCount': followersCount,
+      'sharesCount': sharesCount,
       'comments': comments.map((c) => c.toJson()).toList(),
     };
   }
@@ -186,6 +191,7 @@ class Publication {
       viewsCount: json['viewsCount'] as int? ?? 0,
       likesCount: json['likesCount'] as int? ?? 0,
       followersCount: json['followersCount'] as int? ?? 0,
+      sharesCount: json['sharesCount'] as int? ?? 0,
       comments: parsedComments,
     );
   }

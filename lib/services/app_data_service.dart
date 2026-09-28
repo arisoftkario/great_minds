@@ -348,6 +348,28 @@ class AppDataService extends ChangeNotifier {
     }
   }
 
+  Future<void> incrementPublicationShares(String id) async {
+    final index = _publications.indexWhere((p) => p.id == id);
+    if (index != -1) {
+      final pub = _publications[index];
+      final newShares = pub.sharesCount + 1;
+      _publications[index] = pub.copyWith(sharesCount: newShares);
+      await _savePublications();
+
+      // Notification pour l'administrateur
+      final notif = AdminNotification(
+        id: 'notif_share_${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Nouveau Partage 📢',
+        message: 'Un visiteur a partagé : "${pub.title}" ($newShares partages au total)',
+        type: 'share',
+        createdAt: DateTime.now(),
+        data: {'publicationId': pub.id, 'title': pub.title, 'sharesCount': newShares},
+      );
+      await addNotification(notif);
+      notifyListeners();
+    }
+  }
+
   Future<void> _saveLikedAndFollowed() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -578,6 +600,7 @@ class AppDataService extends ChangeNotifier {
         viewsCount: 342,
         likesCount: 64,
         followersCount: 148,
+        sharesCount: 29,
       ),
       Publication(
         id: 'pub_2',
@@ -595,6 +618,7 @@ class AppDataService extends ChangeNotifier {
         viewsCount: 215,
         likesCount: 42,
         followersCount: 96,
+        sharesCount: 18,
       ),
       Publication(
         id: 'pub_3',
@@ -612,6 +636,7 @@ class AppDataService extends ChangeNotifier {
         viewsCount: 489,
         likesCount: 112,
         followersCount: 230,
+        sharesCount: 54,
       ),
       Publication(
         id: 'pub_4',
@@ -628,6 +653,7 @@ class AppDataService extends ChangeNotifier {
         viewsCount: 178,
         likesCount: 35,
         followersCount: 84,
+        sharesCount: 12,
       ),
     ];
   }

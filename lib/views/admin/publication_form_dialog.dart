@@ -168,6 +168,8 @@ class _PublicationFormDialogState extends State<PublicationFormDialog> {
         viewsCount: widget.publication?.viewsCount ?? 0,
         likesCount: widget.publication?.likesCount ?? 0,
         followersCount: widget.publication?.followersCount ?? 0,
+        sharesCount: widget.publication?.sharesCount ?? 0,
+        comments: widget.publication?.comments ?? [],
       );
 
       Navigator.of(context).pop(newPub);
