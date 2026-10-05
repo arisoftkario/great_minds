@@ -16,8 +16,14 @@ class AppDataService extends ChangeNotifier {
   factory AppDataService() => _instance;
   AppDataService._internal();
 
-  // Cloud Synchronization Endpoint (Partage en temps réel entre PC, téléphones et tous visiteurs)
-  static const String _cloudBaseUrl = 'https://kvdb.io/6Ecw5eC7W6g1m2pG9G2J5Y';
+  // Cloud Synchronization Slots (Stockage Cloud temps réel partagé universellement entre tous les appareils)
+  static const Map<String, String> _cloudSlots = {
+    'gm_publications_v1': 'ff808181a09d98f701a0f6afd7e8544a',
+    'gm_offers_v1': 'ff808181a09d98f701a0f6afdb75544b',
+    'gm_orders_v1': 'ff808181a09d98f701a0f6afde52544c',
+    'gm_whatsapp_v1': 'ff808181a09d98f701a0f6afe120544d',
+    'gm_subscribers_v1': 'ff808181a09d98f701a0f6afe402544f',
+  };
 
   List<Publication> _publications = [];
   List<Offer> _offers = [];
@@ -78,7 +84,7 @@ class AppDataService extends ChangeNotifier {
       final pubJson = prefs.getString(_publicationsKey);
       if (pubJson != null && pubJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(pubJson);
-        final storedPubs = decoded.map((item) => Publication.fromJson(item)).toList();
+        final storedPubs = decoded.map((item) => _sanitizePublication(Publication.fromJson(item))).toList();
         final storedIds = storedPubs.map((p) => p.id).toSet();
         final defaultPubs = _getDefaultPublications();
         final newDefaults = defaultPubs.where((p) => !storedIds.contains(p.id)).toList();
@@ -201,13 +207,14 @@ class AppDataService extends ChangeNotifier {
       final pubJson = prefs.getString(_publicationsKey);
       if (pubJson != null && pubJson.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(pubJson);
-        final storedPubs = decoded.map((item) => Publication.fromJson(item)).toList();
+        final storedPubs = decoded.map((item) => _sanitizePublication(Publication.fromJson(item))).toList();
         final Map<String, Publication> mergedMap = {};
         for (final p in storedPubs) {
           mergedMap[p.id] = p;
         }
         for (final p in _publications) {
-          mergedMap[p.id] = p;
+          final clean = _sanitizePublication(p);
+          mergedMap[clean.id] = clean;
         }
         _publications = mergedMap.values.toList();
       }
@@ -292,18 +299,52 @@ class AppDataService extends ChangeNotifier {
     }
   }
 
-  // --- Cloud Synchronization Methods (kvdb.io over HTTPS) ---
+  // --- Cloud Synchronization Methods (REST API Cloud Storage over HTTPS) ---
   Future<void> _pushToCloud(String key, String jsonBody) async {
+    final slotId = _cloudSlots[key];
+    if (slotId == null) return;
     try {
-      final url = Uri.parse('$_cloudBaseUrl/$key');
-      await http.post(
+      final url = Uri.parse('https://api.restful-api.dev/objects/$slotId');
+      final res = await http.put(
         url,
         headers: {'Content-Type': 'application/json; charset=utf-8'},
-        body: jsonBody,
+        body: jsonEncode({
+          'name': 'great_minds_$key',
+          'data': {
+            'key': key,
+            'payload': jsonBody,
+            'updatedAt': DateTime.now().toIso8601String(),
+          },
+        }),
       ).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        debugPrint('Cloud sync push [$key] success');
+      }
     } catch (e) {
       debugPrint('Cloud sync push error for $key: $e');
     }
+  }
+
+  Future<String?> _fetchPayloadFromCloud(String key) async {
+    final slotId = _cloudSlots[key];
+    if (slotId == null) return null;
+    try {
+      final url = Uri.parse('https://api.restful-api.dev/objects/$slotId');
+      final res = await http.get(url).timeout(const Duration(seconds: 7));
+      if (res.statusCode == 200 && res.body.trim().isNotEmpty) {
+        final Map<String, dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
+        final data = decoded['data'];
+        if (data is Map<String, dynamic>) {
+          final payload = data['payload'];
+          if (payload is String && payload.trim().isNotEmpty) {
+            return payload.trim();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud sync fetch error for $key: $e');
+    }
+    return null;
   }
 
   Future<void> _pullFromCloud({bool notify = false}) async {
@@ -312,20 +353,20 @@ class AppDataService extends ChangeNotifier {
 
     // 1. Publications
     try {
-      final pubUrl = Uri.parse('$_cloudBaseUrl/gm_publications_v1');
-      final res = await http.get(pubUrl).timeout(const Duration(seconds: 7));
-      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
-        final List<dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
-        final cloudPubs = decoded.map((item) => Publication.fromJson(item)).toList();
+      final payload = await _fetchPayloadFromCloud('gm_publications_v1');
+      if (payload != null && payload.isNotEmpty && payload != 'null') {
+        final List<dynamic> decoded = jsonDecode(payload);
+        final cloudPubs = decoded.map((item) => _sanitizePublication(Publication.fromJson(item))).toList();
         final Map<String, Publication> map = {};
         for (final p in _publications) {
-          map[p.id] = p;
+          final clean = _sanitizePublication(p);
+          map[clean.id] = clean;
         }
         for (final p in cloudPubs) {
           map[p.id] = p;
         }
         final merged = map.values.toList();
-        if (merged.length != _publications.length || jsonEncode(merged) != jsonEncode(_publications)) {
+        if (merged.length != _publications.length || jsonEncode(merged.map((p) => p.toJson()).toList()) != jsonEncode(_publications.map((p) => p.toJson()).toList())) {
           _publications = merged;
           hasChanges = true;
           await prefs.setString(_publicationsKey, jsonEncode(_publications.map((p) => p.toJson()).toList()));
@@ -337,10 +378,9 @@ class AppDataService extends ChangeNotifier {
 
     // 2. Offers
     try {
-      final offUrl = Uri.parse('$_cloudBaseUrl/gm_offers_v1');
-      final res = await http.get(offUrl).timeout(const Duration(seconds: 7));
-      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
-        final List<dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
+      final payload = await _fetchPayloadFromCloud('gm_offers_v1');
+      if (payload != null && payload.isNotEmpty && payload != 'null') {
+        final List<dynamic> decoded = jsonDecode(payload);
         final cloudOffers = decoded.map((item) => Offer.fromJson(item)).toList();
         final Map<String, Offer> map = {};
         for (final o in _offers) {
@@ -350,7 +390,7 @@ class AppDataService extends ChangeNotifier {
           map[o.id] = o;
         }
         final merged = map.values.toList();
-        if (merged.length != _offers.length || jsonEncode(merged) != jsonEncode(_offers)) {
+        if (merged.length != _offers.length || jsonEncode(merged.map((o) => o.toJson()).toList()) != jsonEncode(_offers.map((o) => o.toJson()).toList())) {
           _offers = merged;
           hasChanges = true;
           await prefs.setString(_offersKey, jsonEncode(_offers.map((o) => o.toJson()).toList()));
@@ -362,10 +402,9 @@ class AppDataService extends ChangeNotifier {
 
     // 3. Orders
     try {
-      final ordUrl = Uri.parse('$_cloudBaseUrl/gm_orders_v1');
-      final res = await http.get(ordUrl).timeout(const Duration(seconds: 7));
-      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
-        final List<dynamic> decoded = jsonDecode(utf8.decode(res.bodyBytes));
+      final payload = await _fetchPayloadFromCloud('gm_orders_v1');
+      if (payload != null && payload.isNotEmpty && payload != 'null') {
+        final List<dynamic> decoded = jsonDecode(payload);
         final cloudOrders = decoded.map((item) => OrderItem.fromJson(item)).toList();
         final Map<String, OrderItem> map = {};
         for (final o in _orders) {
@@ -387,10 +426,9 @@ class AppDataService extends ChangeNotifier {
 
     // 4. WhatsApp
     try {
-      final whatsUrl = Uri.parse('$_cloudBaseUrl/gm_whatsapp_v1');
-      final res = await http.get(whatsUrl).timeout(const Duration(seconds: 5));
-      if (res.statusCode == 200 && res.body.trim().isNotEmpty && res.body != 'null') {
-        final cloudWhatsApp = res.body.trim();
+      final payload = await _fetchPayloadFromCloud('gm_whatsapp_v1');
+      if (payload != null && payload.isNotEmpty && payload != 'null') {
+        final cloudWhatsApp = payload.trim();
         if (cloudWhatsApp != _whatsAppNumber) {
           _whatsAppNumber = cloudWhatsApp;
           hasChanges = true;
@@ -399,6 +437,30 @@ class AppDataService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Cloud pull whatsapp error: $e');
+    }
+
+    // 5. Subscribers
+    try {
+      final payload = await _fetchPayloadFromCloud('gm_subscribers_v1');
+      if (payload != null && payload.isNotEmpty && payload != 'null') {
+        final List<dynamic> decoded = jsonDecode(payload);
+        final cloudSubs = decoded.map((item) => Subscriber.fromJson(item)).toList();
+        final Map<String, Subscriber> map = {};
+        for (final s in _subscribers) {
+          map[s.id] = s;
+        }
+        for (final s in cloudSubs) {
+          map[s.id] = s;
+        }
+        final merged = map.values.toList();
+        if (merged.length != _subscribers.length) {
+          _subscribers = merged;
+          hasChanges = true;
+          await prefs.setString(_subscribersKey, jsonEncode(_subscribers.map((s) => s.toJson()).toList()));
+        }
+      }
+    } catch (e) {
+      debugPrint('Cloud pull subscribers error: $e');
     }
 
     if (hasChanges && notify) {
@@ -818,9 +880,102 @@ class AppDataService extends ChangeNotifier {
     }
   }
 
+  // --- Publication Sanitization (Correction automatique des anciens assets erronés) ---
+  Publication _sanitizePublication(Publication p) {
+    String? img = p.imageUrl;
+    List<String> imgs = List<String>.from(p.images);
+    bool changed = false;
+
+    // 1. Corriger les publications GM Media qui utilisaient l'image de GM Parfum
+    final isMedia = p.department.toLowerCase().contains('media') ||
+        p.id == 'pub_video_1' ||
+        p.id == 'pub_media_2';
+    if (isMedia) {
+      if (img == 'assets/Imag.jpeg') {
+        img = 'assets/gm_media.jpg';
+        changed = true;
+      }
+      for (int i = 0; i < imgs.length; i++) {
+        if (imgs[i] == 'assets/Imag.jpeg') {
+          imgs[i] = 'assets/gm_media.jpg';
+          changed = true;
+        }
+      }
+      if (imgs.isEmpty && img != null) {
+        imgs = [img];
+        changed = true;
+      }
+    }
+
+    // 2. Corriger les chemins d'assets inexistants
+    if (img == 'assets/gm_auto.jpg') {
+      img = 'assets/Image (2).jpeg';
+      changed = true;
+    }
+    for (int i = 0; i < imgs.length; i++) {
+      if (imgs[i] == 'assets/gm_auto.jpg') {
+        imgs[i] = 'assets/Image (2).jpeg';
+        changed = true;
+      }
+    }
+
+    if (img == 'assets/gm_fondation.jpg') {
+      img = 'assets/Wh.jpeg';
+      changed = true;
+    }
+    for (int i = 0; i < imgs.length; i++) {
+      if (imgs[i] == 'assets/gm_fondation.jpg') {
+        imgs[i] = 'assets/Wh.jpeg';
+        changed = true;
+      }
+    }
+
+    // 3. Optimiser l'image de la publication Passeport & Visa si base64
+    if (p.id == 'pub_1790589544838' || (p.title.toUpperCase().contains('PASSEPORT') && p.department == 'GM Texa')) {
+      if (img != null && (img.startsWith('data:image') || img.isEmpty)) {
+        img = 'assets/gm_passeport_visa.jpg';
+        changed = true;
+      }
+      for (int i = 0; i < imgs.length; i++) {
+        if (imgs[i].startsWith('data:image') || imgs[i].isEmpty) {
+          imgs[i] = 'assets/gm_passeport_visa.jpg';
+          changed = true;
+        }
+      }
+      if (imgs.isEmpty && img != null) {
+        imgs = [img];
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      return p.copyWith(imageUrl: img, images: imgs);
+    }
+    return p;
+  }
+
   // --- Preloaded Initial Professional Data ---
   List<Publication> _getDefaultPublications() {
     return [
+      Publication(
+        id: 'pub_1790589544838',
+        title: 'PASSEPORT & VISA',
+        category: 'Actualité',
+        department: 'GM Texa',
+        summary: 'Nous sommes disponibles pour vos réservations et pour vous accompagner dans toutes les étapes qui suivent.',
+        content: 'Il faut patienter pour avoir une bonne réservation sur vos passeports et voyager plus tranquillement sans avoir de soucis.',
+        author: 'Direction GM GROUP',
+        price: '200 \$',
+        imageUrl: 'assets/gm_passeport_visa.jpg',
+        images: ['assets/gm_passeport_visa.jpg'],
+        publishedDate: DateTime.now().subtract(const Duration(days: 2)),
+        isPublished: true,
+        tags: ['Visa', 'Passeport', 'Voyage', 'Réservation', 'Accompagnement'],
+        viewsCount: 420,
+        likesCount: 85,
+        followersCount: 160,
+        sharesCount: 30,
+      ),
       Publication(
         id: 'pub_video_1',
         title: 'GM Media & Production : Présentation Institutionnelle & Création de Contenus',
@@ -830,7 +985,7 @@ class AppDataService extends ChangeNotifier {
         content: '''GM Media & Production est la branche dédiée à la communication, à la création de contenus percutants, à la production audiovisuelle et à la mise en lumière des talents.\n\nNos services incluent :\n• Conception et réalisation de spots publicitaires, reportages et documentaires\n• Stratégie de marque et communication digitale 360°\n• Couverture d'événements et diffusion haute définition\n• Formation aux métiers des médias, du cadrage et du montage.\n\nVisionnez notre vidéo de présentation pour découvrir notre univers créatif !''',
         author: 'Direction GM Media',
         price: 'Sur devis',
-        imageUrl: 'assets/Imag.jpeg',
+        imageUrl: 'assets/gm_media.jpg',
         videoUrl: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         publishedDate: DateTime.now().subtract(const Duration(hours: 12)),
         isPublished: true,
@@ -849,7 +1004,7 @@ class AppDataService extends ChangeNotifier {
         content: '''GM Auto Solutions accompagne particuliers et entreprises dans l'achat, l'importation sur-mesure et l'entretien de véhicules haut de gamme et utilitaires.\n\nNos garanties :\n• Inspection technique et historique complet avant livraison\n• Dédouanement et immatriculation clés en main\n• Stock permanent de pièces de rechange certifiées constructeur (Toyota, Nissan, Hyundai, Mercedes)\n• Service après-vente et diagnostic électronique complet.\n\nContactez notre équipe commerciale pour obtenir un devis ou planifier un essai.''',
         author: 'Service Commercial GM Auto',
         price: 'À partir de 12 500 \$',
-        imageUrl: 'assets/gm_auto.jpg',
+        imageUrl: 'assets/Image (2).jpeg',
         videoUrl: 'https://www.youtube.com/watch?v=7LHqA26W3q4',
         publishedDate: DateTime.now().subtract(const Duration(days: 1)),
         isPublished: true,
@@ -887,7 +1042,7 @@ class AppDataService extends ChangeNotifier {
         content: '''Fidèle à sa mission philanthropique « Construire l’excellence – Faire grandir le peu », GM Fondation déploie son plan d'action communautaire 2026.\n\nAxes d'intervention prioritaires :\n• Octroi de 50 bourses scolaires et universitaires complètes\n• Financement de micro-projets pour femmes entrepreneures\n• Ateliers gratuits d'initiation au numérique et aux métiers pratiques.\n\nRejoignez nos actions en tant que partenaire, bénévole ou donateur.''',
         author: 'Comité GM Fondation',
         price: 'Engagement Citoyen',
-        imageUrl: 'assets/gm_fondation.jpg',
+        imageUrl: 'assets/Wh.jpeg',
         videoUrl: 'https://www.youtube.com/watch?v=3nQNiWdeH2Q',
         publishedDate: DateTime.now().subtract(const Duration(days: 3)),
         isPublished: true,
@@ -943,7 +1098,7 @@ class AppDataService extends ChangeNotifier {
         content: '''Donnez une dimension cinématographique à vos événements d'entreprise, conférences, mariages et campagnes publicitaires avec les équipes GM Media & Production.\n\nLe pack comprend :\n• Équipe de 2 cadreurs 4K avec drones homologués\n• Prise de son studio et éclairage dynamique professionnel\n• Montage rapide sous 72h avec teaser optimisé pour les réseaux sociaux\n• Remise des fichiers bruts en haute définition sur clé sécurisée.''',
         author: 'Production GM Media',
         price: 'À partir de 250 \$',
-        imageUrl: 'assets/Imag.jpeg',
+        imageUrl: 'assets/gm_media.jpg',
         videoUrl: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
         publishedDate: DateTime.now().subtract(const Duration(days: 12)),
         isPublished: true,

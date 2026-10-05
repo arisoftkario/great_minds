@@ -13,7 +13,7 @@ class AdminLoginView extends StatefulWidget {
 
 class _AdminLoginViewState extends State<AdminLoginView> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -21,14 +21,14 @@ class _AdminLoginViewState extends State<AdminLoginView> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _fillDemoCredentials() {
     setState(() {
-      _usernameController.text = AppConstants.defaultAdminUsername;
+      _emailController.text = AppConstants.defaultAdminEmail;
       _passwordController.text = AppConstants.defaultAdminPassword;
       _errorMessage = null;
     });
@@ -43,7 +43,7 @@ class _AdminLoginViewState extends State<AdminLoginView> {
     });
 
     final success = await AuthService().login(
-      _usernameController.text,
+      _emailController.text,
       _passwordController.text,
     );
 
@@ -57,7 +57,8 @@ class _AdminLoginViewState extends State<AdminLoginView> {
       );
     } else {
       setState(() {
-        _errorMessage = 'Identifiants incorrects. Veuillez réessayer.';
+        _errorMessage = AuthService().lastError ??
+            'Identifiants incorrects. Veuillez réessayer.';
       });
     }
   }
@@ -90,7 +91,6 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Brand Icon
                     Container(
                       width: 64,
                       height: 64,
@@ -116,7 +116,6 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     const Text(
                       'ESPACE ADMINISTRATEUR',
                       style: TextStyle(
@@ -127,7 +126,6 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                       ),
                     ),
                     const SizedBox(height: 8),
-
                     const Text(
                       'GREAT MINDS GROUP',
                       textAlign: TextAlign.center,
@@ -140,7 +138,7 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Gestion des publications, offres et opportunités',
+                      'Connexion sécurisée JWT — gestion multi-agents',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Color(0xFF90B5D4),
@@ -149,7 +147,6 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                       ),
                     ),
                     const SizedBox(height: 32),
-
                     if (_errorMessage != null) ...[
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -166,40 +163,58 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                             Expanded(
                               child: Text(
                                 _errorMessage!,
-                                style: const TextStyle(color: Color(0xFFFF8A80), fontSize: 13, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  color: Color(0xFFFF8A80),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ],
-
-                    // Username Field
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Identifiant',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, fontWeight: FontWeight.w700),
+                        'Adresse email',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
-                      controller: _usernameController,
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
                       style: const TextStyle(color: AppTheme.textPrimary),
                       decoration: const InputDecoration(
-                        hintText: 'admin',
-                        prefixIcon: Icon(Icons.person_outline_rounded, color: AppTheme.textSecondary),
+                        hintText: 'admin@greatminds.com',
+                        prefixIcon: Icon(Icons.email_outlined, color: AppTheme.textSecondary),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Saisissez votre identifiant' : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Saisissez votre adresse email';
+                        }
+                        if (!v.contains('@')) {
+                          return 'Adresse email invalide';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 20),
-
-                    // Password Field
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Mot de passe',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -212,18 +227,19 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                         prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppTheme.textSecondary),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                            _obscurePassword
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
                             color: AppTheme.textSecondary,
                           ),
                           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Saisissez votre mot de passe' : null,
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Saisissez votre mot de passe' : null,
                       onFieldSubmitted: (_) => _handleLogin(),
                     ),
                     const SizedBox(height: 28),
-
-                    // Submit Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -237,7 +253,10 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                             ? const SizedBox(
                                 width: 22,
                                 height: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2.5, color: AppTheme.primaryNavy),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: AppTheme.primaryNavy,
+                                ),
                               )
                             : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -253,8 +272,6 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Demo Credentials helper
                     InkWell(
                       onTap: _fillDemoCredentials,
                       borderRadius: BorderRadius.circular(8),
@@ -266,7 +283,7 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                             Icon(Icons.key_rounded, size: 16, color: Color(0xFF7CB8EB)),
                             SizedBox(width: 6),
                             Text(
-                              'Remplir les identifiants de test (admin / admin)',
+                              'Remplir les identifiants Super Admin de test',
                               style: TextStyle(
                                 color: Color(0xFF7CB8EB),
                                 fontSize: 12,
@@ -279,8 +296,6 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // Return to public site
                     TextButton.icon(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.arrow_back_rounded, size: 16, color: Colors.white60),

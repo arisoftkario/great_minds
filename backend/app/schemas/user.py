@@ -6,7 +6,7 @@ from app.models.user import UserRole, UserStatus
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
-    role: UserRole = UserRole.EDITOR
+    role: UserRole = UserRole.AGENT
     status: UserStatus = UserStatus.ACTIVE
 
 class UserCreate(UserBase):

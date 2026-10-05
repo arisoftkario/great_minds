@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../core/theme/app_theme.dart';
 import '../../models/activity_model.dart';
 import '../../models/offer_model.dart';
@@ -40,7 +41,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _openWhatsApp([String? message]) async {
     final whatsAppNumber = AppDataService().whatsAppNumber;
     final whatsAppUri = Uri.https('wa.me', '/$whatsAppNumber', <String, String>{
-      'text': message ??
+      'text':
+          message ??
           'Bonjour GREAT MINDS GROUP, je souhaite obtenir plus d’informations.',
     });
 
@@ -78,9 +80,7 @@ class _HomePageState extends State<HomePage> {
       );
     } else {
       Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (context) => const AdminLoginView(),
-        ),
+        MaterialPageRoute<void>(builder: (context) => const AdminLoginView()),
       );
     }
   }
@@ -90,7 +90,11 @@ class _HomePageState extends State<HomePage> {
   void _handleNavigate(String section) {
     switch (section) {
       case 'home':
-        _scrollController.animateTo(0, duration: const Duration(milliseconds: 600), curve: Curves.easeOutCubic);
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+        );
         break;
       case 'services':
         _scrollToKey(_servicesKey);
@@ -167,7 +171,10 @@ class _HomePageState extends State<HomePage> {
                 icon: const Icon(Icons.install_mobile_rounded, size: 20),
                 label: Text(
                   LanguageService().t('nav_install'),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               );
             },
@@ -312,7 +319,12 @@ class _HeroSection extends StatelessWidget {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ..._heroContent(onExplore, onContact, onAdminPortal, compact: true),
+                                ..._heroContent(
+                                  onExplore,
+                                  onContact,
+                                  onAdminPortal,
+                                  compact: true,
+                                ),
                                 const SizedBox(height: 36),
                                 const Center(
                                   child: _BusinessVisual(isCompact: true),
@@ -324,8 +336,13 @@ class _HeroSection extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: _heroContent(onExplore, onContact, onAdminPortal),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: _heroContent(
+                                      onExplore,
+                                      onContact,
+                                      onAdminPortal,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 28),
@@ -376,7 +393,11 @@ class _HeroSection extends StatelessWidget {
       width: compact ? double.infinity : 520,
       child: Text(
         LanguageService().t('hero_subtitle'),
-        style: const TextStyle(color: Color(0xFFD7E7F7), fontSize: 17, height: 1.6),
+        style: const TextStyle(
+          color: Color(0xFFD7E7F7),
+          fontSize: 17,
+          height: 1.6,
+        ),
       ),
     ),
     const SizedBox(height: 28),
@@ -409,8 +430,15 @@ class _HeroSection extends StatelessWidget {
         ),
         OutlinedButton.icon(
           onPressed: () => onNavigate('about'),
-          icon: const Icon(Icons.account_balance_rounded, size: 18, color: Color(0xFF59D6B6)),
-          label: const Text('🏛️ Histoire & Vision', style: TextStyle(fontWeight: FontWeight.w700)),
+          icon: const Icon(
+            Icons.account_balance_rounded,
+            size: 18,
+            color: Color(0xFF59D6B6),
+          ),
+          label: const Text(
+            '🏛️ Histoire & Vision',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF59D6B6),
             side: const BorderSide(color: Color(0xFF59D6B6), width: 1.5),
@@ -457,23 +485,63 @@ class _Navigation extends StatelessWidget {
           const _Brand(),
           const Spacer(),
           if (!isMobile) ...[
-            TextButton(onPressed: () => onNavigate('news'), child: Text(LanguageService().t('nav_publications'), style: const TextStyle(color: AppTheme.accentCyan, fontWeight: FontWeight.w700))),
-            TextButton(onPressed: () => onNavigate('offers'), child: Text(LanguageService().t('nav_offers'), style: const TextStyle(color: Colors.white70))),
-            TextButton(onPressed: () => onNavigate('services'), child: Text(LanguageService().t('nav_activities'), style: const TextStyle(color: Colors.white70))),
-            TextButton(onPressed: () => onNavigate('univers'), child: Text(LanguageService().t('nav_univers'), style: const TextStyle(color: Colors.white70))),
+            TextButton(
+              onPressed: () => onNavigate('news'),
+              child: Text(
+                LanguageService().t('nav_publications'),
+                style: const TextStyle(
+                  color: AppTheme.accentCyan,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => onNavigate('offers'),
+              child: Text(
+                LanguageService().t('nav_offers'),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            TextButton(
+              onPressed: () => onNavigate('services'),
+              child: Text(
+                LanguageService().t('nav_activities'),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            TextButton(
+              onPressed: () => onNavigate('univers'),
+              child: Text(
+                LanguageService().t('nav_univers'),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
               child: OutlinedButton.icon(
                 onPressed: () => onNavigate('about'),
-                icon: const Icon(Icons.account_balance_rounded, size: 14, color: Color(0xFF59D6B6)),
+                icon: const Icon(
+                  Icons.account_balance_rounded,
+                  size: 14,
+                  color: Color(0xFF59D6B6),
+                ),
                 label: Text(
                   LanguageService().t('nav_about'),
-                  style: const TextStyle(color: Color(0xFF59D6B6), fontWeight: FontWeight.w800, fontSize: 13),
+                  style: const TextStyle(
+                    color: Color(0xFF59D6B6),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF59D6B6), width: 1.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ),
@@ -498,11 +566,16 @@ class _Navigation extends StatelessWidget {
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF59D6B6).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF59D6B6).withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: const Color(0xFF59D6B6).withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -521,7 +594,11 @@ class _Navigation extends StatelessWidget {
                           letterSpacing: 0.5,
                         ),
                       ),
-                      const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF59D6B6), size: 18),
+                      const Icon(
+                        Icons.arrow_drop_down_rounded,
+                        color: Color(0xFF59D6B6),
+                        size: 18,
+                      ),
                     ],
                   ),
                 ),
@@ -537,14 +614,22 @@ class _Navigation extends StatelessWidget {
                           Text(
                             lang.name,
                             style: TextStyle(
-                              color: isSelected ? const Color(0xFF59D6B6) : Colors.white,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected
+                                  ? const Color(0xFF59D6B6)
+                                  : Colors.white,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               fontSize: 13,
                             ),
                           ),
                           if (isSelected) ...[
                             const Spacer(),
-                            const Icon(Icons.check_rounded, color: Color(0xFF59D6B6), size: 16),
+                            const Icon(
+                              Icons.check_rounded,
+                              color: Color(0xFF59D6B6),
+                              size: 16,
+                            ),
                           ],
                         ],
                       ),
@@ -564,23 +649,42 @@ class _Navigation extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 6),
                 child: isMobile
                     ? IconButton(
-                        onPressed: () => PwaInstallService.promptInstall(context),
+                        onPressed: () =>
+                            PwaInstallService.promptInstall(context),
                         tooltip: LanguageService().t('nav_install'),
                         style: IconButton.styleFrom(
                           backgroundColor: const Color(0xFFE5A93C),
                           foregroundColor: Colors.black,
                         ),
-                        icon: const Icon(Icons.install_mobile_rounded, size: 20),
+                        icon: const Icon(
+                          Icons.install_mobile_rounded,
+                          size: 20,
+                        ),
                       )
                     : ElevatedButton.icon(
-                        onPressed: () => PwaInstallService.promptInstall(context),
-                        icon: const Icon(Icons.install_mobile_rounded, size: 16),
-                        label: Text(LanguageService().t('nav_install'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        onPressed: () =>
+                            PwaInstallService.promptInstall(context),
+                        icon: const Icon(
+                          Icons.install_mobile_rounded,
+                          size: 16,
+                        ),
+                        label: Text(
+                          LanguageService().t('nav_install'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE5A93C),
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
               );
@@ -606,16 +710,21 @@ class _Navigation extends StatelessWidget {
                 },
                 tooltip: LanguageService().t('nav_sync_tooltip'),
                 style: IconButton.styleFrom(
-                  backgroundColor: isSyncing 
+                  backgroundColor: isSyncing
                       ? const Color(0xFF59D6B6).withValues(alpha: 0.2)
                       : Colors.white.withValues(alpha: 0.08),
-                  foregroundColor: isSyncing ? const Color(0xFF59D6B6) : Colors.white70,
+                  foregroundColor: isSyncing
+                      ? const Color(0xFF59D6B6)
+                      : Colors.white70,
                 ),
                 icon: isSyncing
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF59D6B6)),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF59D6B6),
+                        ),
                       )
                     : const Icon(Icons.sync_rounded, size: 20),
               );
@@ -650,7 +759,10 @@ class _Navigation extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Color(0xFF59D6B6)),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
               ),
               child: Text(LanguageService().t('contact_btn_chat')),
             ),
@@ -661,7 +773,8 @@ class _Navigation extends StatelessWidget {
               onPressed: onOpenMenu,
               tooltip: 'Menu',
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFF59D6B6).withValues(alpha: 0.15),
+                backgroundColor: const Color(0xFF59D6B6)
+                    .withValues(alpha: 0.15),
                 foregroundColor: const Color(0xFF59D6B6),
               ),
               icon: const Icon(Icons.menu_rounded, size: 22),
@@ -755,7 +868,8 @@ class _HeroLogo extends StatelessWidget {
           child: Image.asset(
             'assets/Image.jpeg',
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => const _HeroLogoFallback(),
+            errorBuilder: (context, error, stackTrace) =>
+                const _HeroLogoFallback(),
           ),
         ),
       ),
@@ -771,7 +885,11 @@ class _HeroLogoFallback extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        const Icon(Icons.auto_awesome_rounded, color: Color(0xCC061A2E), size: 84),
+        const Icon(
+          Icons.auto_awesome_rounded,
+          color: Color(0xCC061A2E),
+          size: 84,
+        ),
         Container(
           width: 82,
           height: 50,
@@ -782,7 +900,12 @@ class _HeroLogoFallback extends StatelessWidget {
           ),
           child: const Text(
             'GM',
-            style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: 1),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
           ),
         ),
       ],
@@ -883,7 +1006,8 @@ class _BusinessVisual extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF59D6B6).withValues(alpha: 0.35),
+                          color: const Color(0xFF59D6B6)
+                              .withValues(alpha: 0.35),
                           blurRadius: 40,
                           spreadRadius: 8,
                         ),
@@ -929,7 +1053,10 @@ class _BusinessVisual extends StatelessWidget {
                   top: 4,
                   left: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF061A2E).withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(20),
@@ -941,7 +1068,11 @@ class _BusinessVisual extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.trending_up_rounded, color: Color(0xFF59D6B6), size: 14),
+                        const Icon(
+                          Icons.trending_up_rounded,
+                          color: Color(0xFF59D6B6),
+                          size: 14,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           LanguageService().t('vision_stat_1'),
@@ -960,7 +1091,10 @@ class _BusinessVisual extends StatelessWidget {
                   bottom: 4,
                   right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF061A2E).withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(20),
@@ -972,7 +1106,11 @@ class _BusinessVisual extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.stars_rounded, color: Color(0xFFE5A93C), size: 14),
+                        const Icon(
+                          Icons.stars_rounded,
+                          color: Color(0xFFE5A93C),
+                          size: 14,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           LanguageService().t('vision_stat_2'),
@@ -1090,9 +1228,18 @@ class _StatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = [
-      _Stat(number: LanguageService().t('stat_assisted_num'), label: LanguageService().t('stat_assisted_lbl')),
-      _Stat(number: LanguageService().t('stat_partners_num'), label: LanguageService().t('stat_partners_lbl')),
-      _Stat(number: LanguageService().t('stat_satisfaction_num'), label: LanguageService().t('stat_satisfaction_lbl')),
+      _Stat(
+        number: LanguageService().t('stat_assisted_num'),
+        label: LanguageService().t('stat_assisted_lbl'),
+      ),
+      _Stat(
+        number: LanguageService().t('stat_partners_num'),
+        label: LanguageService().t('stat_partners_lbl'),
+      ),
+      _Stat(
+        number: LanguageService().t('stat_satisfaction_num'),
+        label: LanguageService().t('stat_satisfaction_lbl'),
+      ),
     ];
 
     return Container(
@@ -1216,7 +1363,10 @@ class _ServicesSection extends StatelessWidget {
                   final cards = items
                       .map(
                         (item) => compact
-                            ? Container(margin: const EdgeInsets.only(bottom: 18), child: item)
+                            ? Container(
+                                margin: const EdgeInsets.only(bottom: 18),
+                                child: item,
+                              )
                             : Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 18),
@@ -1225,7 +1375,9 @@ class _ServicesSection extends StatelessWidget {
                               ),
                       )
                       .toList();
-                  return compact ? Column(children: cards) : Row(children: cards);
+                  return compact
+                      ? Column(children: cards)
+                      : Row(children: cards);
                 },
               ),
             ],
@@ -1457,7 +1609,10 @@ class _BusinessActivityCard extends StatelessWidget {
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF0C3153),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                     OutlinedButton.icon(
@@ -1467,8 +1622,14 @@ class _BusinessActivityCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF073454),
                         backgroundColor: const Color(0xFF59D6B6),
-                        side: const BorderSide(color: Color(0xFF073454), width: 1.5),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        side: const BorderSide(
+                          color: Color(0xFF073454),
+                          width: 1.5,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
                         textStyle: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -1529,13 +1690,17 @@ class _DepartmentPage extends StatelessWidget {
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.arrow_back_rounded),
                           label: Text(LanguageService().t('dept_back_btn')),
-                          style: TextButton.styleFrom(foregroundColor: const Color(0xFFB9DDF5)),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFB9DDF5),
+                          ),
                         ),
                         const SizedBox(height: 42),
                         LayoutBuilder(
                           builder: (context, constraints) {
                             final compact = constraints.maxWidth < 700;
-                            final identity = _DepartmentIdentity(activity: activity);
+                            final identity = _DepartmentIdentity(
+                              activity: activity,
+                            );
                             final details = Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -1561,7 +1726,11 @@ class _DepartmentPage extends StatelessWidget {
                                 const SizedBox(height: 18),
                                 Text(
                                   activity.description,
-                                  style: const TextStyle(color: Color(0xFFD7E7F7), height: 1.6, fontSize: 17),
+                                  style: const TextStyle(
+                                    color: Color(0xFFD7E7F7),
+                                    height: 1.6,
+                                    fontSize: 17,
+                                  ),
                                 ),
                                 const SizedBox(height: 26),
                                 FilledButton.icon(
@@ -1571,14 +1740,33 @@ class _DepartmentPage extends StatelessWidget {
                                   style: FilledButton.styleFrom(
                                     backgroundColor: const Color(0xFF59D6B6),
                                     foregroundColor: const Color(0xFF061A2E),
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 17),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 17,
+                                    ),
                                   ),
                                 ),
                               ],
                             );
                             return compact
-                                ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [identity, const SizedBox(height: 30), details])
-                                : Row(crossAxisAlignment: CrossAxisAlignment.center, children: [identity, const SizedBox(width: 44), Expanded(child: details)]);
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      identity,
+                                      const SizedBox(height: 30),
+                                      details,
+                                    ],
+                                  )
+                                : Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      identity,
+                                      const SizedBox(width: 44),
+                                      Expanded(child: details),
+                                    ],
+                                  );
                           },
                         ),
                       ],
@@ -1591,16 +1779,35 @@ class _DepartmentPage extends StatelessWidget {
               ListenableBuilder(
                 listenable: AppDataService(),
                 builder: (context, _) {
-                  final pubs = AppDataService().publishedPublications.where((p) {
+                  final pubs = AppDataService().publishedPublications.where((
+                    p,
+                  ) {
                     final dept = p.department.toLowerCase();
                     final actId = activity.id.toLowerCase();
                     if (actId == 'parfum') return dept.contains('parfum');
-                    if (actId == 'texa') return dept.contains('texa') || dept.contains('visa') || dept.contains('passeport') || dept.contains('voyage');
-                    if (actId == 'autosolution') return dept.contains('auto') || dept.contains('solution') || dept.contains('véhicule');
-                    if (actId == 'fondation') return dept.contains('fondation') || dept.contains('social') || dept.contains('solidarité');
-                    if (actId == 'emploi') return dept.contains('emploi') || dept.contains('formation');
-                    if (actId == 'media' || actId == 'production') return dept.contains('media') || dept.contains('production') || dept.contains('audiovisuel');
-                    return dept.contains(actId) || activity.title.toLowerCase().contains(dept) || dept.contains('toutes');
+                    if (actId == 'texa')
+                      return dept.contains('texa') ||
+                          dept.contains('visa') ||
+                          dept.contains('passeport') ||
+                          dept.contains('voyage');
+                    if (actId == 'autosolution')
+                      return dept.contains('auto') ||
+                          dept.contains('solution') ||
+                          dept.contains('véhicule');
+                    if (actId == 'fondation')
+                      return dept.contains('fondation') ||
+                          dept.contains('social') ||
+                          dept.contains('solidarité');
+                    if (actId == 'emploi')
+                      return dept.contains('emploi') ||
+                          dept.contains('formation');
+                    if (actId == 'media' || actId == 'production')
+                      return dept.contains('media') ||
+                          dept.contains('production') ||
+                          dept.contains('audiovisuel');
+                    return dept.contains(actId) ||
+                        activity.title.toLowerCase().contains(dept) ||
+                        dept.contains('toutes');
                   }).toList();
 
                   if (pubs.isEmpty) return const SizedBox.shrink();
@@ -1641,9 +1848,13 @@ class _DepartmentPage extends StatelessWidget {
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1B7AE6).withValues(alpha: 0.1),
+                                    color: const Color(0xFF1B7AE6)
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
@@ -1666,7 +1877,9 @@ class _DepartmentPage extends StatelessWidget {
                                   runSpacing: 20,
                                   children: pubs.map((pub) {
                                     return SizedBox(
-                                      width: compact ? double.infinity : (constraints.maxWidth - 20) / 2,
+                                      width: compact
+                                          ? double.infinity
+                                          : (constraints.maxWidth - 20) / 2,
                                       child: _DepartmentPublicationCard(
                                         publication: pub,
                                         activity: activity,
@@ -1692,11 +1905,17 @@ class _DepartmentPage extends StatelessWidget {
                     final dept = offer.department.toLowerCase();
                     final actId = activity.id.toLowerCase();
                     if (actId == 'parfum') return dept.contains('parfum');
-                    if (actId == 'texa') return dept.contains('texa') || dept.contains('visa') || dept.contains('passeport');
+                    if (actId == 'texa')
+                      return dept.contains('texa') ||
+                          dept.contains('visa') ||
+                          dept.contains('passeport');
                     if (actId == 'autosolution') return dept.contains('auto');
                     if (actId == 'fondation') return dept.contains('fondation');
-                    if (actId == 'emploi') return dept.contains('emploi') || dept.contains('formation');
-                    return dept.contains(actId) || activity.title.toLowerCase().contains(dept);
+                    if (actId == 'emploi')
+                      return dept.contains('emploi') ||
+                          dept.contains('formation');
+                    return dept.contains(actId) ||
+                        activity.title.toLowerCase().contains(dept);
                   }).toList();
 
                   if (offers.isEmpty) return const SizedBox.shrink();
@@ -1737,9 +1956,13 @@ class _DepartmentPage extends StatelessWidget {
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1B7AE6).withValues(alpha: 0.1),
+                                    color: const Color(0xFF1B7AE6)
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
@@ -1762,7 +1985,9 @@ class _DepartmentPage extends StatelessWidget {
                                   runSpacing: 20,
                                   children: offers.map((offer) {
                                     return SizedBox(
-                                      width: compact ? double.infinity : (constraints.maxWidth - 20) / 2,
+                                      width: compact
+                                          ? double.infinity
+                                          : (constraints.maxWidth - 20) / 2,
                                       child: _DepartmentProductCard(
                                         offer: offer,
                                         activity: activity,
@@ -1790,21 +2015,61 @@ class _DepartmentPage extends StatelessWidget {
                       children: [
                         Text(
                           LanguageService().t('dept_services_badge'),
-                          style: const TextStyle(color: Color(0xFF1B7AE6), fontWeight: FontWeight.w800, letterSpacing: 1.8, fontSize: 12),
+                          style: const TextStyle(
+                            color: Color(0xFF1B7AE6),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.8,
+                            fontSize: 12,
+                          ),
                         ),
                         const SizedBox(height: 14),
                         Text(
                           LanguageService().t('dept_services_title'),
-                          style: const TextStyle(color: Color(0xFF061A2E), fontSize: 34, fontWeight: FontWeight.w800, height: 1.1),
+                          style: const TextStyle(
+                            color: Color(0xFF061A2E),
+                            fontSize: 34,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
                         ),
                         const SizedBox(height: 32),
                         LayoutBuilder(
                           builder: (context, constraints) {
                             final compact = constraints.maxWidth < 760;
-                            final cards = activity.offerings.map((offering) => _DepartmentOfferingCard(offering: offering)).toList();
+                            final cards = activity.offerings
+                                .map(
+                                  (offering) => _DepartmentOfferingCard(
+                                    offering: offering,
+                                  ),
+                                )
+                                .toList();
                             return compact
-                                ? Column(children: cards.map((card) => Padding(padding: const EdgeInsets.only(bottom: 16), child: card)).toList())
-                                : Row(children: cards.map((card) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 16), child: card))).toList());
+                                ? Column(
+                                    children: cards
+                                        .map(
+                                          (card) => Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 16,
+                                            ),
+                                            child: card,
+                                          ),
+                                        )
+                                        .toList(),
+                                  )
+                                : Row(
+                                    children: cards
+                                        .map(
+                                          (card) => Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 16,
+                                              ),
+                                              child: card,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  );
                           },
                         ),
                       ],
@@ -1831,7 +2096,10 @@ class _DepartmentPublicationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('dd MMM yyyy', 'fr_FR').format(publication.publishedDate);
+    final dateStr = DateFormat(
+      'dd MMM yyyy',
+      'fr_FR',
+    ).format(publication.publishedDate);
 
     return Container(
       decoration: BoxDecoration(
@@ -1856,7 +2124,8 @@ class _DepartmentPublicationCard extends StatelessWidget {
                 AppDataService().incrementPublicationViews(publication.id);
                 showDialog<void>(
                   context: context,
-                  builder: (context) => PublicationDetailDialog(publication: publication),
+                  builder: (context) =>
+                      PublicationDetailDialog(publication: publication),
                 );
               },
               child: SizedBox(
@@ -1876,7 +2145,10 @@ class _DepartmentPublicationCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1B7AE6).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -1928,7 +2200,10 @@ class _DepartmentPublicationCard extends StatelessWidget {
                   children: [
                     // Price Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
@@ -1948,31 +2223,49 @@ class _DepartmentPublicationCard extends StatelessWidget {
                       onPressed: () {
                         showDialog<void>(
                           context: context,
-                          builder: (context) => OrderCheckoutDialog(publication: publication),
+                          builder: (context) =>
+                              OrderCheckoutDialog(publication: publication),
                         );
                       },
                       icon: const Icon(Icons.shopping_bag_rounded, size: 13),
-                      label: const Text('Se procurer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      label: const Text(
+                        'Se procurer',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     // Lire plus button
                     TextButton(
                       onPressed: () {
-                        AppDataService().incrementPublicationViews(publication.id);
+                        AppDataService().incrementPublicationViews(
+                          publication.id,
+                        );
                         showDialog<void>(
                           context: context,
-                          builder: (context) => PublicationDetailDialog(publication: publication),
+                          builder: (context) =>
+                              PublicationDetailDialog(publication: publication),
                         );
                       },
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF061A2E),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                       ),
                       child: Text(LanguageService().t('pubs_read_more')),
                     ),
@@ -1988,22 +2281,25 @@ class _DepartmentPublicationCard extends StatelessWidget {
 }
 
 class _DepartmentProductCard extends StatelessWidget {
-  const _DepartmentProductCard({
-    required this.offer,
-    required this.activity,
-  });
+  const _DepartmentProductCard({required this.offer, required this.activity});
 
   final Offer offer;
   final BusinessActivity activity;
 
   Future<void> _orderViaWhatsApp(BuildContext context) async {
-    final whatsAppNumber = offer.customContactWhatsApp ?? AppDataService().whatsAppNumber;
-    final message = 'Bonjour GREAT MINDS GROUP, je souhaite commander / souscrire à "${offer.title}" (${offer.department} - Réf: ${offer.id}).';
+    final whatsAppNumber =
+        offer.customContactWhatsApp ?? AppDataService().whatsAppNumber;
+    final message =
+        'Bonjour GREAT MINDS GROUP, je souhaite commander / souscrire à "${offer.title}" (${offer.department} - Réf: ${offer.id}).';
     final uri = Uri.https('wa.me', '/$whatsAppNumber', {'text': message});
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Impossible d’ouvrir WhatsApp. Contactez-nous au +$whatsAppNumber')),
+          SnackBar(
+            content: Text(
+              'Impossible d’ouvrir WhatsApp. Contactez-nous au +$whatsAppNumber',
+            ),
+          ),
         );
       }
     }
@@ -2057,7 +2353,10 @@ class _DepartmentProductCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: typeBg,
                   borderRadius: BorderRadius.circular(8),
@@ -2075,7 +2374,10 @@ class _DepartmentProductCard extends StatelessWidget {
               const Spacer(),
               if (offer.isUrgent)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -2144,7 +2446,10 @@ class _DepartmentProductCard extends StatelessWidget {
               runSpacing: 6,
               children: offer.requirements.take(2).map((req) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0F4F8),
                     borderRadius: BorderRadius.circular(6),
@@ -2152,7 +2457,11 @@ class _DepartmentProductCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF1B7AE6)),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 12,
+                        color: Color(0xFF1B7AE6),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         req.length > 35 ? '${req.substring(0, 32)}...' : req,
@@ -2185,9 +2494,17 @@ class _DepartmentProductCard extends StatelessWidget {
                     foregroundColor: const Color(0xFF061A2E),
                     side: const BorderSide(color: Color(0xFFB5CDE4)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: Text(LanguageService().t('dept_details_btn'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  child: Text(
+                    LanguageService().t('dept_details_btn'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -2195,12 +2512,20 @@ class _DepartmentProductCard extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => _orderViaWhatsApp(context),
                   icon: const Icon(Icons.shopping_bag_rounded, size: 15),
-                  label: Text(LanguageService().t('dept_order_btn'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  label: Text(
+                    LanguageService().t('dept_order_btn'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1B7AE6),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ),
@@ -2235,7 +2560,8 @@ class _DepartmentIdentity extends StatelessWidget {
             : Image.asset(
                 activity.imageAsset!,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _ActivityImageFallback(icon: activity.fallbackIcon),
+                errorBuilder: (context, error, stackTrace) =>
+                    _ActivityImageFallback(icon: activity.fallbackIcon),
               ),
       ),
     );
@@ -2262,9 +2588,19 @@ class _DepartmentOfferingCard extends StatelessWidget {
         children: [
           Icon(offering.icon, color: const Color(0xFF1B7AE6), size: 32),
           const Spacer(),
-          Text(offering.title, style: const TextStyle(color: Color(0xFF061A2E), fontSize: 20, fontWeight: FontWeight.w800)),
+          Text(
+            offering.title,
+            style: const TextStyle(
+              color: Color(0xFF061A2E),
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(offering.description, style: const TextStyle(color: Color(0xFF536D84), height: 1.5)),
+          Text(
+            offering.description,
+            style: const TextStyle(color: Color(0xFF536D84), height: 1.5),
+          ),
         ],
       ),
     );
@@ -2280,9 +2616,21 @@ class _ProcessSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final steps = [
-      ('01', LanguageService().t('step_1_title'), LanguageService().t('step_1_desc')),
-      ('02', LanguageService().t('step_2_title'), LanguageService().t('step_2_desc')),
-      ('03', LanguageService().t('step_3_title'), LanguageService().t('step_3_desc')),
+      (
+        '01',
+        LanguageService().t('step_1_title'),
+        LanguageService().t('step_1_desc'),
+      ),
+      (
+        '02',
+        LanguageService().t('step_2_title'),
+        LanguageService().t('step_2_desc'),
+      ),
+      (
+        '03',
+        LanguageService().t('step_3_title'),
+        LanguageService().t('step_3_desc'),
+      ),
     ];
 
     return Container(
@@ -2296,12 +2644,22 @@ class _ProcessSection extends StatelessWidget {
             children: [
               Text(
                 LanguageService().t('process_badge'),
-                style: const TextStyle(color: Color(0xFF1B7AE6), fontSize: 12, letterSpacing: 2, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  color: Color(0xFF1B7AE6),
+                  fontSize: 12,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 18),
               Text(
                 LanguageService().t('process_title'),
-                style: const TextStyle(color: Color(0xFF061A2E), fontSize: 42, fontWeight: FontWeight.w800, height: 1.05),
+                style: const TextStyle(
+                  color: Color(0xFF061A2E),
+                  fontSize: 42,
+                  fontWeight: FontWeight.w800,
+                  height: 1.05,
+                ),
               ),
               const SizedBox(height: 36),
               LayoutBuilder(
@@ -2310,12 +2668,24 @@ class _ProcessSection extends StatelessWidget {
                   return compact
                       ? Column(
                           children: steps
-                              .map((step) => Padding(padding: const EdgeInsets.only(bottom: 18), child: _StepCard(step: step)))
+                              .map(
+                                (step) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 18),
+                                  child: _StepCard(step: step),
+                                ),
+                              )
                               .toList(),
                         )
                       : Row(
                           children: steps
-                              .map((step) => Expanded(child: Padding(padding: const EdgeInsets.only(right: 18), child: _StepCard(step: step))))
+                              .map(
+                                (step) => Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 18),
+                                    child: _StepCard(step: step),
+                                  ),
+                                ),
+                              )
                               .toList(),
                         );
                 },
@@ -2345,11 +2715,28 @@ class _StepCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(step.$1, style: const TextStyle(color: Color(0xFF1B7AE6), fontSize: 32, fontWeight: FontWeight.w800)),
+          Text(
+            step.$1,
+            style: const TextStyle(
+              color: Color(0xFF1B7AE6),
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 18),
-          Text(step.$2, style: const TextStyle(color: Color(0xFF061A2E), fontSize: 22, fontWeight: FontWeight.w700)),
+          Text(
+            step.$2,
+            style: const TextStyle(
+              color: Color(0xFF061A2E),
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 10),
-          Text(step.$3, style: const TextStyle(color: Color(0xFF536D84), height: 1.6)),
+          Text(
+            step.$3,
+            style: const TextStyle(color: Color(0xFF536D84), height: 1.6),
+          ),
         ],
       ),
     );
@@ -2377,20 +2764,36 @@ class _CTASection extends StatelessWidget {
               final compact = constraints.maxWidth < 720;
               final text = Text(
                 LanguageService().t('cta_title'),
-                style: const TextStyle(color: Color(0xFF061A2E), fontSize: 42, fontWeight: FontWeight.w800, height: 1.1),
+                style: const TextStyle(
+                  color: Color(0xFF061A2E),
+                  fontSize: 42,
+                  fontWeight: FontWeight.w800,
+                  height: 1.1,
+                ),
               );
               final button = FilledButton(
                 onPressed: onContact,
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF061A2E),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 18,
+                  ),
                 ),
                 child: Text(LanguageService().t('cta_button')),
               );
               return compact
-                  ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [text, const SizedBox(height: 24), button])
-                  : Row(children: [Expanded(child: text), button]);
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [text, const SizedBox(height: 24), button],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: text),
+                        button,
+                      ],
+                    );
             },
           ),
         ),
@@ -2430,11 +2833,19 @@ class _Footer extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(right: 14),
                         child: TextButton.icon(
-                          onPressed: () => PwaInstallService.promptInstall(context),
-                          icon: const Icon(Icons.install_mobile_rounded, size: 16, color: Color(0xFFE5A93C)),
+                          onPressed: () =>
+                              PwaInstallService.promptInstall(context),
+                          icon: const Icon(
+                            Icons.install_mobile_rounded,
+                            size: 16,
+                            color: Color(0xFFE5A93C),
+                          ),
                           label: Text(
                             LanguageService().t('nav_install'),
-                            style: const TextStyle(color: Color(0xFFE5A93C), fontWeight: FontWeight.w700),
+                            style: const TextStyle(
+                              color: Color(0xFFE5A93C),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       );
@@ -2442,10 +2853,17 @@ class _Footer extends StatelessWidget {
                   ),
                   TextButton.icon(
                     onPressed: onAdminPortal,
-                    icon: const Icon(Icons.lock_outline_rounded, size: 16, color: Color(0xFF8FBCE4)),
+                    icon: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 16,
+                      color: Color(0xFF8FBCE4),
+                    ),
                     label: Text(
                       LanguageService().t('nav_admin'),
-                      style: const TextStyle(color: Color(0xFF8FBCE4), fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Color(0xFF8FBCE4),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -2453,7 +2871,10 @@ class _Footer extends StatelessWidget {
                     onPressed: onContact,
                     child: Text(
                       LanguageService().t('contact_btn_chat'),
-                      style: const TextStyle(color: Color(0xFF59D6B6), fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        color: Color(0xFF59D6B6),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -2462,7 +2883,8 @@ class _Footer extends StatelessWidget {
                     listenable: LanguageService(),
                     builder: (context, _) {
                       final currentLang = LanguageService().currentLanguage;
-                      final currentModel = LanguageService().currentLanguageModel;
+                      final currentModel =
+                          LanguageService().currentLanguageModel;
                       return PopupMenuButton<String>(
                         tooltip: 'Langue / Language',
                         constraints: const BoxConstraints(maxHeight: 380),
@@ -2473,48 +2895,79 @@ class _Footer extends StatelessWidget {
                         color: const Color(0xFF0D253A),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
-                          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
                         ),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(currentModel.flag, style: const TextStyle(fontSize: 15)),
+                              Text(
+                                currentModel.flag,
+                                style: const TextStyle(fontSize: 15),
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 currentModel.name,
-                                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                              const Icon(Icons.arrow_drop_up_rounded, color: Colors.white70, size: 16),
+                              const Icon(
+                                Icons.arrow_drop_up_rounded,
+                                color: Colors.white70,
+                                size: 16,
+                              ),
                             ],
                           ),
                         ),
                         itemBuilder: (BuildContext context) {
-                          return LanguageService().supportedLanguages.map((lang) {
+                          return LanguageService().supportedLanguages.map((
+                            lang,
+                          ) {
                             final isSelected = lang.code == currentLang;
                             return PopupMenuItem<String>(
                               value: lang.code,
                               child: Row(
                                 children: [
-                                  Text(lang.flag, style: const TextStyle(fontSize: 18)),
+                                  Text(
+                                    lang.flag,
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
                                   const SizedBox(width: 10),
                                   Text(
                                     lang.name,
                                     style: TextStyle(
-                                      color: isSelected ? const Color(0xFF59D6B6) : Colors.white,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected
+                                          ? const Color(0xFF59D6B6)
+                                          : Colors.white,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
                                       fontSize: 13,
                                     ),
                                   ),
                                   if (isSelected) ...[
                                     const Spacer(),
-                                    const Icon(Icons.check_rounded, color: Color(0xFF59D6B6), size: 16),
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      color: Color(0xFF59D6B6),
+                                      size: 16,
+                                    ),
                                   ],
                                 ],
                               ),
@@ -2531,7 +2984,11 @@ class _Footer extends StatelessWidget {
               const SizedBox(height: 18),
               Text(
                 'WhatsApp : +${AppDataService().whatsAppNumber}',
-                style: const TextStyle(color: Color(0xFF59D6B6), fontSize: 14, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  color: Color(0xFF59D6B6),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
@@ -2571,9 +3028,7 @@ class _MobileDrawer extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
               decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFF1B3A5E)),
-                ),
+                border: Border(bottom: BorderSide(color: Color(0xFF1B3A5E))),
               ),
               child: Row(
                 children: [
@@ -2606,7 +3061,10 @@ class _MobileDrawer extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white70,
+                    ),
                     tooltip: 'Fermer',
                   ),
                 ],
@@ -2639,7 +3097,9 @@ class _MobileDrawer extends StatelessWidget {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: LanguageService().supportedLanguages.map((lang) {
+                          children: LanguageService().supportedLanguages.map((
+                            lang,
+                          ) {
                             final isSelected = lang.code == currentLang;
                             return Padding(
                               padding: const EdgeInsets.only(right: 8),
@@ -2648,14 +3108,21 @@ class _MobileDrawer extends StatelessWidget {
                                 label: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(lang.flag, style: const TextStyle(fontSize: 14)),
+                                    Text(
+                                      lang.flag,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
                                     const SizedBox(width: 6),
                                     Text(
                                       lang.name,
                                       style: TextStyle(
-                                        color: isSelected ? const Color(0xFF061A2E) : Colors.white,
+                                        color: isSelected
+                                            ? const Color(0xFF061A2E)
+                                            : Colors.white,
                                         fontSize: 12,
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
                                       ),
                                     ),
                                   ],
@@ -2702,7 +3169,9 @@ class _MobileDrawer extends StatelessWidget {
                     icon: Icons.newspaper_rounded,
                     title: LanguageService().t('nav_publications'),
                     subtitle: LanguageService().t('drawer_news_subtitle'),
-                    badge: LanguageService().t('nav_publications').toUpperCase(),
+                    badge: LanguageService()
+                        .t('nav_publications')
+                        .toUpperCase(),
                     isAccent: true,
                     onTap: () {
                       Navigator.of(context).pop();
@@ -2777,21 +3246,34 @@ class _MobileDrawer extends StatelessWidget {
                                   color: Color(0xFF59D6B6),
                                 ),
                               )
-                            : const Icon(Icons.sync_rounded, color: Color(0xFF59D6B6), size: 22),
+                            : const Icon(
+                                Icons.sync_rounded,
+                                color: Color(0xFF59D6B6),
+                                size: 22,
+                              ),
                         title: Text(
                           LanguageService().t('nav_sync_tooltip'),
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         subtitle: Text(
                           LanguageService().t('drawer_sync_subtitle'),
-                          style: const TextStyle(color: Colors.white54, fontSize: 11),
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 11,
+                          ),
                         ),
                         onTap: () async {
                           await AppDataService().syncData();
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(LanguageService().t('nav_sync_success')),
+                                content: Text(
+                                  LanguageService().t('nav_sync_success'),
+                                ),
                                 duration: const Duration(seconds: 2),
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -2804,14 +3286,25 @@ class _MobileDrawer extends StatelessWidget {
 
                   // Admin Portal Tile
                   ListTile(
-                    leading: const Icon(Icons.admin_panel_settings_rounded, color: AppTheme.accentCyan, size: 22),
+                    leading: const Icon(
+                      Icons.admin_panel_settings_rounded,
+                      color: AppTheme.accentCyan,
+                      size: 22,
+                    ),
                     title: Text(
                       LanguageService().t('nav_admin'),
-                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
                       LanguageService().t('drawer_admin_subtitle'),
-                      style: const TextStyle(color: Colors.white54, fontSize: 11),
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
                     ),
                     onTap: () {
                       Navigator.of(context).pop();
@@ -2844,14 +3337,20 @@ class _MobileDrawer extends StatelessWidget {
                         backgroundColor: const Color(0xFF59D6B6),
                         foregroundColor: const Color(0xFF061A2E),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'WhatsApp : +${AppDataService().whatsAppNumber}',
-                    style: const TextStyle(color: Color(0xFF59D6B6), fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Color(0xFF59D6B6),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -2873,7 +3372,9 @@ class _MobileDrawer extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
-        color: isAccent ? const Color(0xFF59D6B6).withValues(alpha: 0.1) : Colors.transparent,
+        color: isAccent
+            ? const Color(0xFF59D6B6).withValues(alpha: 0.1)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         border: isAccent
             ? Border.all(color: const Color(0xFF59D6B6).withValues(alpha: 0.3))
@@ -2930,7 +3431,11 @@ class _MobileDrawer extends StatelessWidget {
                 style: const TextStyle(color: Colors.white54, fontSize: 11),
               )
             : null,
-        trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white30, size: 20),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: Colors.white30,
+          size: 20,
+        ),
         onTap: onTap,
       ),
     );

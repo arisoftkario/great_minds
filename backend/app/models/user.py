@@ -7,7 +7,7 @@ from app.database import Base
 class UserRole(str, enum.Enum):
     SUPER_ADMIN = "super_admin"
     ADMIN = "admin"
-    EDITOR = "editor"
+    AGENT = "agent"
 
 class UserStatus(str, enum.Enum):
     ACTIVE = "active"
@@ -21,7 +21,7 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(150), nullable=False)
-    role = Column(Enum(UserRole), default=UserRole.EDITOR, nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.AGENT, nullable=False)
     status = Column(Enum(UserStatus), default=UserStatus.ACTIVE, nullable=False)
     
     failed_login_attempts = Column(Integer, default=0)

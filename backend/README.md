@@ -12,7 +12,7 @@ Serveur d'API moderne, sécurisé et performant pour la gestion du Back-Office e
 - **Contrôle d'Accès Basé sur les Rôles (RBAC)** :
   - `super_admin` : Accès total, gestion des rôles, suppression d'utilisateurs.
   - `admin` : Gestion des utilisateurs, validation et publication de contenus.
-  - `editor` : Création et édition de contenus et offres.
+  - `agent` : Création et édition de contenus et offres.
 - **Gestion Complète des Données (CRUD)** :
   - **Utilisateurs** : création, modification, suspension, suppression.
   - **Contenus & Offres** : publication d'offres d'emploi, actualités, services.

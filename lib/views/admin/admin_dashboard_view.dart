@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
+import '../../models/admin_user_model.dart';
 import '../../models/offer_model.dart';
 import '../../models/order_model.dart';
 import '../../models/publication_model.dart';
+import '../../services/admin_users_service.dart';
+import '../../services/api_client.dart';
 import '../../services/app_data_service.dart';
 import '../../services/auth_service.dart';
+import 'admin_user_form_dialog.dart';
 import 'offer_form_dialog.dart';
 import 'publication_form_dialog.dart';
 
@@ -23,12 +27,19 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   final TextEditingController _searchOfferController = TextEditingController();
   final TextEditingController _searchSubscriberController = TextEditingController();
   final TextEditingController _searchOrderController = TextEditingController();
+
   String _filterPubCategory = 'Tous';
   String _filterPubDept = 'Tous';
   String _filterOfferDept = 'Tous';
   String _filterOfferType = 'Tous';
   String _filterOrderStatus = 'Tous';
   bool _isSyncing = false;
+
+  // Gestion utilisateurs (Paramètres)
+  List<AdminUser> _adminUsers = [];
+  bool _usersLoading = false;
+  String? _usersError;
+  bool _usersLoadedOnce = false;
 
   Future<void> _syncAllData() async {
     setState(() => _isSyncing = true);
@@ -41,12 +52,174 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _ensureTabAllowed();
+  }
+
+  @override
   void dispose() {
     _searchPubController.dispose();
     _searchOfferController.dispose();
     _searchSubscriberController.dispose();
     _searchOrderController.dispose();
     super.dispose();
+  }
+
+  AdminModule _moduleForTab(int index) {
+    switch (index) {
+      case 0:
+        return AdminModule.overview;
+      case 1:
+        return AdminModule.publications;
+      case 2:
+        return AdminModule.offers;
+      case 3:
+        return AdminModule.orders;
+      case 4:
+        return AdminModule.notifications;
+      case 5:
+        return AdminModule.subscribers;
+      case 6:
+        return AdminModule.settings;
+      default:
+        return AdminModule.overview;
+    }
+  }
+
+  void _ensureTabAllowed() {
+    if (!AuthService().canAccess(_moduleForTab(_selectedTabIndex))) {
+      _selectedTabIndex = 0;
+    }
+  }
+
+  Future<void> _loadAdminUsers({bool force = false}) async {
+    if (!AuthService().canManageUsers) return;
+    if (_usersLoading) return;
+    if (_usersLoadedOnce && !force) return;
+
+    setState(() {
+      _usersLoading = true;
+      _usersError = null;
+    });
+
+    try {
+      final users = await AdminUsersService().listUsers();
+      if (!mounted) return;
+      setState(() {
+        _adminUsers = users;
+        _usersLoading = false;
+        _usersLoadedOnce = true;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _usersLoading = false;
+        _usersError = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _usersLoading = false;
+        _usersError = 'Impossible de charger les utilisateurs.';
+      });
+    }
+  }
+
+  Future<void> _openUserForm([AdminUser? user]) async {
+    final auth = AuthService();
+    if (user != null && !auth.isSuperAdmin && user.role != AdminRole.agent) {
+      _showToast('Vous ne pouvez modifier que les comptes Agent.');
+      return;
+    }
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => AdminUserFormDialog(user: user),
+    );
+    if (result == null || !mounted) return;
+
+    try {
+      if (user == null) {
+        await AdminUsersService().createUser(
+          email: result['email'] as String,
+          fullName: result['full_name'] as String,
+          password: result['password'] as String,
+          role: result['role'] as AdminRole,
+          status: result['status'] as AdminUserStatus,
+        );
+        _showToast('Utilisateur créé avec succès.');
+      } else {
+        await AdminUsersService().updateUser(
+          userId: user.id,
+          email: result['email'] as String,
+          fullName: result['full_name'] as String,
+          password: (result['password'] as String?)?.isNotEmpty == true
+              ? result['password'] as String
+              : null,
+          role: result['role'] as AdminRole,
+          status: result['status'] as AdminUserStatus,
+        );
+        _showToast('Utilisateur mis à jour.');
+      }
+      await _loadAdminUsers(force: true);
+    } on ApiException catch (e) {
+      _showToast(e.message);
+    } catch (_) {
+      _showToast('Une erreur est survenue.');
+    }
+  }
+
+  Future<void> _toggleUserStatus(AdminUser user) async {
+    final next = user.status == AdminUserStatus.active
+        ? AdminUserStatus.suspended
+        : AdminUserStatus.active;
+    try {
+      await AdminUsersService().setStatus(user.id, next);
+      _showToast(next == AdminUserStatus.suspended
+          ? 'Compte suspendu.'
+          : 'Compte réactivé.');
+      await _loadAdminUsers(force: true);
+    } on ApiException catch (e) {
+      _showToast(e.message);
+    }
+  }
+
+  Future<void> _confirmDeleteUser(AdminUser user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Supprimer l’utilisateur'),
+        content: Text('Supprimer définitivement « ${user.fullName} » (${user.email}) ?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await AdminUsersService().deleteUser(user.id);
+      _showToast('Utilisateur supprimé.');
+      await _loadAdminUsers(force: true);
+    } on ApiException catch (e) {
+      _showToast(e.message);
+    }
+  }
+
+  Color _roleBadgeColor(AdminRole role) {
+    switch (role) {
+      case AdminRole.superAdmin:
+        return const Color(0xFFE5A93C);
+      case AdminRole.admin:
+        return AppTheme.accentBlue;
+      case AdminRole.agent:
+        return const Color(0xFF10B981);
+    }
   }
 
   void _openPublicationDialog([Publication? pub]) async {
@@ -531,6 +704,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
   // --- Sidebar ---
   Widget _buildSidebar({bool isDrawer = false}) {
+    final auth = AuthService();
     final unreadCount = AppDataService().unreadNotificationsCount;
     final totalSubscribers = AppDataService().subscribers.length;
     final pendingOrdersCount = AppDataService().orders.where((o) => o.status == 'En attente').length;
@@ -581,30 +755,37 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               children: [
-                _sidebarItem(0, Icons.dashboard_rounded, 'Vue d’ensemble'),
-                _sidebarItem(1, Icons.article_rounded, 'Publications & Actus'),
-                _sidebarItem(2, Icons.work_outline_rounded, 'Offres & Emploi'),
-                _sidebarItem(
-                  3,
-                  Icons.shopping_bag_rounded,
-                  'Commandes & Ventes',
-                  badgeCount: pendingOrdersCount,
-                  badgeColor: const Color(0xFFF59E0B),
-                ),
-                _sidebarItem(
-                  4,
-                  Icons.notifications_active_rounded,
-                  'Notifications & Likes',
-                  badgeCount: unreadCount,
-                ),
-                _sidebarItem(
-                  5,
-                  Icons.people_alt_rounded,
-                  'Abonnés & Newsletter',
-                  badgeCount: totalSubscribers,
-                  badgeColor: const Color(0xFF10B981),
-                ),
-                _sidebarItem(6, Icons.settings_rounded, 'Paramètres'),
+                if (auth.canAccess(AdminModule.overview))
+                  _sidebarItem(0, Icons.dashboard_rounded, 'Vue d’ensemble'),
+                if (auth.canAccess(AdminModule.publications))
+                  _sidebarItem(1, Icons.article_rounded, 'Publications & Actus'),
+                if (auth.canAccess(AdminModule.offers))
+                  _sidebarItem(2, Icons.work_outline_rounded, 'Offres & Emploi'),
+                if (auth.canAccess(AdminModule.orders))
+                  _sidebarItem(
+                    3,
+                    Icons.shopping_bag_rounded,
+                    'Commandes & Ventes',
+                    badgeCount: pendingOrdersCount,
+                    badgeColor: const Color(0xFFF59E0B),
+                  ),
+                if (auth.canAccess(AdminModule.notifications))
+                  _sidebarItem(
+                    4,
+                    Icons.notifications_active_rounded,
+                    'Notifications & Likes',
+                    badgeCount: unreadCount,
+                  ),
+                if (auth.canAccess(AdminModule.subscribers))
+                  _sidebarItem(
+                    5,
+                    Icons.people_alt_rounded,
+                    'Abonnés & Newsletter',
+                    badgeCount: totalSubscribers,
+                    badgeColor: const Color(0xFF10B981),
+                  ),
+                if (auth.canAccess(AdminModule.settings))
+                  _sidebarItem(6, Icons.settings_rounded, 'Paramètres'),
               ],
             ),
           ),
@@ -630,11 +811,20 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AuthService().currentUsername.isEmpty ? 'Administrateur' : AuthService().currentUsername,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+                            auth.currentUsername.isEmpty
+                                ? 'Administrateur'
+                                : auth.currentUsername,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const Text('Super Admin', style: TextStyle(color: Color(0xFF7CA0C2), fontSize: 11)),
+                          Text(
+                            auth.currentRole.label,
+                            style: const TextStyle(color: Color(0xFF7CA0C2), fontSize: 11),
+                          ),
                         ],
                       ),
                     ),
@@ -723,7 +913,14 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
               )
             : null,
         onTap: () {
+          if (!AuthService().canAccess(_moduleForTab(index))) {
+            _showToast('Accès non autorisé pour votre rôle.');
+            return;
+          }
           setState(() => _selectedTabIndex = index);
+          if (index == 6) {
+            _loadAdminUsers();
+          }
           if (Navigator.of(context).canPop() && MediaQuery.sizeOf(context).width < 900) {
             Navigator.of(context).pop();
           }
@@ -734,6 +931,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
   // --- Current Tab Router ---
   Widget _buildCurrentTab(AppDataService service) {
+    _ensureTabAllowed();
     switch (_selectedTabIndex) {
       case 0:
         return _buildOverviewTab(service);
@@ -1693,14 +1891,25 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   }
 
   // ==========================================
-  // TAB 3: PARAMÈTRES & CONFIGURATION
+  // TAB 6: PARAMÈTRES & CONFIGURATION
   // ==========================================
   Widget _buildSettingsTab(AppDataService service) {
     final whatsController = TextEditingController(text: service.whatsAppNumber);
+    final auth = AuthService();
+
+    // Charger les utilisateurs à l'ouverture de l'onglet
+    if (auth.canManageUsers && !_usersLoadedOnce && !_usersLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadAdminUsers());
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (auth.canManageUsers) ...[
+          _buildUsersManagementSection(),
+          const SizedBox(height: 24),
+        ],
+
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -1822,6 +2031,266 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildUsersManagementSection() {
+    final auth = AuthService();
+    final dateFmt = DateFormat('dd/MM/yyyy HH:mm');
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Gestion des utilisateurs & agents',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      auth.isSuperAdmin
+                          ? 'Créez des comptes avec rôles Super Admin, Admin ou Agent. Chaque agent dispose de ses propres identifiants.'
+                          : 'Créez et gérez les comptes Agent avec identifiant (email) et mot de passe.',
+                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: _usersLoading ? null : () => _loadAdminUsers(force: true),
+                icon: const Icon(Icons.refresh_rounded, size: 16),
+                label: const Text('Actualiser'),
+              ),
+              const SizedBox(width: 10),
+              FilledButton.icon(
+                onPressed: () => _openUserForm(),
+                icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                label: const Text('Nouvel utilisateur'),
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.accentBlue),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F7FF),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Autorisations par rôle',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppTheme.textPrimary),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '• Super Admin — accès total + suppression d’utilisateurs\n'
+                  '• Admin — tous les modules + création d’Agents\n'
+                  '• Agent — Vue d’ensemble, Publications, Offres, Notifications',
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.45),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          if (_usersLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_usersError != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.errorRed.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_usersError!, style: const TextStyle(color: AppTheme.errorRed, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    onPressed: () => _loadAdminUsers(force: true),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Réessayer'),
+                  ),
+                ],
+              ),
+            )
+          else if (_adminUsers.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Aucun utilisateur trouvé.',
+                style: TextStyle(color: AppTheme.textSecondary),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _adminUsers.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final user = _adminUsers[index];
+                final isSelf = user.id == auth.currentUserId;
+                final roleColor = _roleBadgeColor(user.role);
+                final isActive = user.status == AdminUserStatus.active;
+
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.lightBg,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.borderSubtle),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: roleColor.withValues(alpha: 0.15),
+                        child: Icon(Icons.person_rounded, color: roleColor, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    user.fullName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 14,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (isSelf) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.accentCyan.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Vous',
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.primaryNavy),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(user.email, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: roleColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    user.role.label,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: roleColor,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                        : AppTheme.errorRed.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    user.status.label,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: isActive ? const Color(0xFF059669) : AppTheme.errorRed,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  user.lastLoginAt != null
+                                      ? 'Dernière connexion : ${dateFmt.format(user.lastLoginAt!.toLocal())}'
+                                      : 'Jamais connecté',
+                                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Modifier',
+                        onPressed: (!auth.isSuperAdmin && user.role != AdminRole.agent)
+                            ? null
+                            : () => _openUserForm(user),
+                        icon: Icon(
+                          Icons.edit_rounded,
+                          size: 20,
+                          color: (!auth.isSuperAdmin && user.role != AdminRole.agent)
+                              ? AppTheme.textSecondary.withValues(alpha: 0.4)
+                              : AppTheme.accentBlue,
+                        ),
+                      ),
+                      if (!isSelf && (auth.isSuperAdmin || user.role == AdminRole.agent))
+                        IconButton(
+                          tooltip: isActive ? 'Suspendre' : 'Réactiver',
+                          onPressed: () => _toggleUserStatus(user),
+                          icon: Icon(
+                            isActive ? Icons.block_rounded : Icons.check_circle_outline_rounded,
+                            size: 20,
+                            color: isActive ? AppTheme.errorRed : const Color(0xFF10B981),
+                          ),
+                        ),
+                      if (auth.isSuperAdmin && !isSelf)
+                        IconButton(
+                          tooltip: 'Supprimer',
+                          onPressed: () => _confirmDeleteUser(user),
+                          icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.errorRed),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 
