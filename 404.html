@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <base href="/great_minds/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#061A2E">
+  
+  <!-- Primary Meta Tags -->
+  <title>GREAT MINDS GROUP | Formation, Recrutement, Emploi & Impact Social</title>
+  <meta name="title" content="GREAT MINDS GROUP | Formation, Recrutement, Emploi & Impact Social">
+  <meta name="description" content="GREAT MINDS GROUP — Leader panafricain et mondial en formation professionnelle, insertion des jeunes, offres d'emploi, entrepreneuriat et impact communautaire (GM Formation, GM Parfum, GM Texa, GM Autosolution, GM Fondation).">
+  <meta name="keywords" content="Great Minds Group, GM Group, formation professionnelle, emploi RDC, recrutement Afrique, bourse de formation, GM Formation, GM Texa, GM Parfum, GM Autosolution, GM Fondation, impact social, stage, entrepreneuriat">
+  <meta name="author" content="GREAT MINDS GROUP">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="https://arisoftkario.github.io/great_minds/">
+
+  <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://arisoftkario.github.io/great_minds/">
+  <meta property="og:title" content="GREAT MINDS GROUP — Bâtir l'excellence, Transformer des vies">
+  <meta property="og:description" content="Découvrez nos programmes de formation, nos offres exclusives d'emploi, et participez à l'essor d'une jeunesse qualifiée et autonome.">
+  <meta property="og:image" content="https://arisoftkario.github.io/great_minds/icons/Icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:site_name" content="GREAT MINDS GROUP">
+  <meta property="og:locale" content="fr_FR">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://arisoftkario.github.io/great_minds/">
+  <meta name="twitter:title" content="GREAT MINDS GROUP — Formation & Opportunités">
+  <meta name="twitter:description" content="Formation professionnelle, recrutement et impact social d'envergure. Rejoignez la communauté GREAT MINDS GROUP.">
+  <meta name="twitter:image" content="https://arisoftkario.github.io/great_minds/icons/Icon-512.png">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="GREAT MINDS GROUP">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Structured Data (Schema.org JSON-LD) for Search Engine Ranking -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "GREAT MINDS GROUP",
+    "url": "https://arisoftkario.github.io/great_minds/",
+    "logo": "https://arisoftkario.github.io/great_minds/icons/Icon-512.png",
+    "description": "Organisation leader dans la formation professionnelle, l'insertion professionnelle, la création d'opportunités et l'impact social.",
+    "email": "arisoft28@gmail.com",
+    "sameAs": [
+      "https://facebook.com",
+      "https://linkedin.com",
+      "https://instagram.com",
+      "https://wa.me/243818047970"
+    ],
+    "department": [
+      {
+        "@type": "Organization",
+        "name": "GM Formation & Emploi",
+        "description": "Formations certifiantes, stages et insertion professionnelle."
+      },
+      {
+        "@type": "Organization",
+        "name": "GM Parfum",
+        "description": "Créations et distribution de fragrances de haute qualité."
+      },
+      {
+        "@type": "Organization",
+        "name": "GM Texa",
+        "description": "Confection textile et ateliers de mode."
+      },
+      {
+        "@type": "Organization",
+        "name": "GM Autosolution",
+        "description": "Solutions et services automobiles innovants."
+      },
+      {
+        "@type": "Organization",
+        "name": "GM Fondation",
+        "description": "Actions humanitaires et soutien communautaire."
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Script d'installation PWA et détection mode autonome -->
+  <script>
+    window.deferredPWAInstallPrompt = null;
+    window.isPWAInstalled = false;
+
+    function checkIsAppInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             window.navigator.standalone === true ||
+             document.referrer.includes('android-app://') ||
+             window.isPWAInstalled === true;
+    }
+
+    window.isAppInstalled = checkIsAppInstalled;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPWAInstallPrompt = e;
+      console.log('PWA installation disponible !');
+    });
+
+    window.addEventListener('appinstalled', (evt) => {
+      window.isPWAInstalled = true;
+      window.deferredPWAInstallPrompt = null;
+      console.log('Application GREAT MINDS installée avec succès !');
+      window.dispatchEvent(new CustomEvent('pwa-installed'));
+    });
+
+    window.triggerPWAInstall = function() {
+      if (window.deferredPWAInstallPrompt) {
+        window.deferredPWAInstallPrompt.prompt();
+        window.deferredPWAInstallPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            window.isPWAInstalled = true;
+            window.dispatchEvent(new CustomEvent('pwa-installed'));
+          }
+          window.deferredPWAInstallPrompt = null;
+        });
+        return true;
+      }
+      return false;
+    };
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
